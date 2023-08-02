@@ -1,8 +1,9 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+import users from "./users";
+import authorization from "../middlewares/validation";
 
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+const router = express.Router();
 
-module.exports = router;
+router.use('/users', authorization, users);
+
+export default router;
