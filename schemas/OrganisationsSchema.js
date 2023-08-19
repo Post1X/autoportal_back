@@ -15,6 +15,10 @@ const OrganisationsSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Services'
     },
+    extservices_id: {
+        type: Schema.Types.Array,
+        ref: 'ExtServices'
+    },
     title: {
         type: Schema.Types.String
     },

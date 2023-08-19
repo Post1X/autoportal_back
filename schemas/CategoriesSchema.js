@@ -5,6 +5,9 @@ const Schema = mongoose.Schema;
 const CategoriesSchema = new Schema({
     title: {
         type: Schema.Types.String
+    },
+    img: {
+        type: Schema.Types.String
     }
 })
 

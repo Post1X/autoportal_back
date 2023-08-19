@@ -7,8 +7,13 @@ const router = express.Router();
 router.get('/profile/client', ClientsController.GetProfile);
 router.post('/register/client', ClientsController.RegisterClient);
 router.post('/login/client', ClientsController.LoginClient);
-router.get('/profile/dealers', DealersController.GetProfile);
-router.post('/register/dealers', DealersController.RegisterDealer);
-router.post('/login/dealers', DealersController.LoginDealer);
+
+// dealer
+
+router.get('/profile/dealer', DealersController.GetProfile);
+router.post('/register/dealer', DealersController.RegisterDealer);
+router.post('/login/dealer', DealersController.LoginDealer);
+
+// admin
 
 export default router;

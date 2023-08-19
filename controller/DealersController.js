@@ -40,7 +40,12 @@ class DealersController {
                 .select('phone_number')
                 .select('city')
                 .select('email')
+                .select('password')
+            console.log(user)
+            console.log(password)
+            console.log(await argon2.verify(user.password, password))
             const token = jwt.sign({
+                isDealer: true,
                 phone_number: user.phone_number,
                 user_id: user._id,
                 email: user.email
