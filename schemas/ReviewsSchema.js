@@ -12,6 +12,9 @@ const ReviewsSchema = new Schema({
     },
     text: {
         type: Schema.Types.String
+    },
+    user_name: {
+        type: Schema.Types.String
     }
 })
 

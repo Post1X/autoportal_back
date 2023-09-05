@@ -1,5 +1,4 @@
 import Categories from "../schemas/CategoriesSchema";
-import ExtServices from "../schemas/ExtServicesSchema";
 import Services from "../schemas/ServicesSchema";
 import Cars from "../schemas/CarsSchema";
 
@@ -7,6 +6,7 @@ class CategoriesController {
     static CreateCategory = async (req, res, next) => {
         try {
             const {title} = req.body;
+            console.log(req)
             const destination = `${req.files[0].destination}${req.files[0].filename}`;
             const newCategory = new Categories({
                 title: title,
@@ -36,7 +36,7 @@ class CategoriesController {
                 category_id: categoryId
             });
             const ExtServicesPromise = services.map(async (item) => {
-                const subServices = await ExtServices.find({
+                const subServices = await Services.find({
                     service_id: item._id
                 });
                 return {

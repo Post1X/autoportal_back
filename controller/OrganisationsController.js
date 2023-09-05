@@ -1,55 +1,53 @@
 import Organisations from "../schemas/OrganisationsSchema";
+import moment from "moment-timezone";
 
 class OrganisationsController {
     static CreateOrganisation = async (req, res, next) => {
         try {
             const {
-                title,
-                service_id,
-                category_id,
-                service_params,
-                model_name,
+                name,
+                typeServices,
+                categoryId,
+                brandsCars,
                 city,
                 address,
-                phone_number,
-                wa_number,
-                additional_phone,
-                short_description,
+                mainPhone,
+                whatsApp,
+                employeers,
+                description,
                 schedule
             } = req.body;
             const {user_id} = req;
             const photoArray = [];
-            const logo_img = req.files.find(file => file.fieldname === 'logo_img');
-            for (let i = 0; i < req.files.length - 1; i++) {
-                const file = req.files[i];
-                if (file.fieldname === `photo_${i}`) {
-                    const logoFile = req.files.find(f => f.fieldname === `photo_${i}`);
-                    const parts = logoFile.path.split('public');
-                    const result = parts[1].substring(1);
-                    photoArray.push(result);
-                }
-            }
-            const address_name = address.address_name;
-            const lon = address.lon;
-            const lat = address.lat;
+            // const logo_img = req.files.find(file => file.fieldname === 'logo_img');
+            // if (req.files) {
+            //     for (let i = 0; i < req.files.length - 1; i++) {
+            //         const file = req.files[i];
+            //         if (file.fieldname === `photo_${i}`) {
+            //             const logoFile = req.files.find(f => f.fieldname === `photo_${i}`);
+            //             const parts = logoFile.path.split('public');
+            //             const result = parts[1].substring(1);
+            //             photoArray.push(result);
+            //         }
+            //     }
+            // }
             const newOrganisation = new Organisations({
                 dealer_id: user_id,
-                title: title,
-                service_id: service_id,
-                extservices_id: service_params,
-                category_id: category_id,
-                model_name: model_name,
+                name: name,
+                typeServices: typeServices,
+                categoryId: categoryId,
+                brandsCars: brandsCars,
                 city: city,
-                address: address_name,
-                lon: lon,
-                lat: lat,
-                phone_number: phone_number,
-                wa_number: wa_number,
-                additional_info: additional_phone,
-                short_description: short_description,
+                address: address,
+                // lon: lon,
+                // lat: lat,
+                mainPhone: mainPhone,
+                whatsApp: whatsApp,
+                employeers: employeers,
+                description: description,
                 schedule: schedule,
-                photo_array: photoArray,
-                logo_img: logo_img
+                photos: photoArray,
+                // logo: logo_img
             })
             await newOrganisation.save();
             res.status(200).json({
@@ -67,10 +65,8 @@ class OrganisationsController {
             const organisations = await Organisations.find({
                 dealer_id: user_id
             }).populate('dealer_id')
-                .populate('category_id')
-                .populate('service_id')
-                .populate('extservices_id')
-                .populate('model_names')
+                .populate('categoryId')
+                .populate('typeServices')
             res.status(200).json(organisations);
         } catch (e) {
             e.status = 401;
@@ -81,17 +77,16 @@ class OrganisationsController {
     static UpdateOrganisation = async (req, res, next) => {
         try {
             const {
-                title,
-                service_id,
-                category_id,
-                service_params,
-                model_name,
+                name,
+                typeServices,
+                categoryId,
+                brandsCars,
                 city,
                 address,
-                phone_number,
-                wa_number,
-                additional_phone,
-                short_description,
+                mainPhone,
+                whatsApp,
+                employeers,
+                description,
                 schedule
             } = req.body;
             const {user_id} = req;
@@ -107,29 +102,28 @@ class OrganisationsController {
                     photoArray.push(result);
                 }
             }
-            const address_name = address.address_name;
-            const lon = address.lon;
-            const lat = address.lat;
+            // const address_name = address.address_name;
+            // const lon = address.lon;
+            // const lat = address.lat;
             await Organisations.findOneAndUpdate({
                 _id: organisation_id
             }, {
                 dealer_id: user_id,
-                title: title,
-                service_id: service_id,
-                extservices_id: service_params,
-                category_id: category_id,
-                model_name: model_name,
+                name: name,
+                typeServices: typeServices,
+                categoryId: categoryId,
+                brandsCars: brandsCars,
                 city: city,
-                address: address_name,
-                lon: lon,
-                lat: lat,
-                phone_number: phone_number,
-                wa_number: wa_number,
-                additional_info: additional_phone,
-                short_description: short_description,
+                address: address,
+                // lon: lon,
+                // lat: lat,
+                mainPhone: mainPhone,
+                whatsApp: whatsApp,
+                employeers: employeers,
+                description: description,
                 schedule: schedule,
-                photo_array: photoArray,
-                logo_img: logo_img
+                photos: photoArray,
+                logo: logo_img
             })
             res.status(200).json({
                 message: 'success'
@@ -157,19 +151,17 @@ class OrganisationsController {
     //
     static GetSingleOrganisation = async (req, res, next) => {
         try {
-            const {organisation_id} = req.query;
-            const {user_id} = req;
+            const {id} = req.query;
+            // const {user_id} = req;
             const organisation = await Organisations.findOne({
-                _id: organisation_id, dealer_id: user_id
+                _id: id
             })
                 .populate('dealer_id')
-                .populate('category_id')
-                .populate('service_id')
-                .populate('extservices_id')
-                .populate('model_names')
-            res.status(200).json({
+                .populate('categoryId')
+                .populate('typeServices')
+            res.status(200).json(
                 organisation
-            })
+            )
         } catch (e) {
             e.status = 401;
             next(e);
@@ -177,7 +169,16 @@ class OrganisationsController {
     }
     static FilterOrganisation = async (req, res, next) => {
         try {
-            const {scheduleFilter, city, categoryId, servicesId, brandsCarsId, sortType} = req.body;
+            moment.locale('ru');
+            const currentDate = new Date();
+            const hours = currentDate.getHours();
+            const minutes = currentDate.getMinutes();
+            const timeZone = 'Asia/Yerevan';
+            const currentTime = moment().tz(timeZone).format('HH:mm')
+            const dayOfWeek = moment().format('dddd');
+            const todayDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)
+            console.log(todayDay)
+            const {scheduleFilter, city, categoryId, servicesId, brandsCarsId, sortType, id} = req.body;
             const filter = {};
             if (city) {
                 filter.city = city;
@@ -194,35 +195,152 @@ class OrganisationsController {
             }
             const days_ids = [];
             const query = await Organisations.find(filter);
-            console.log(query)
             for (const obj of query) {
                 if (obj.schedule && Array.isArray(obj.schedule)) {
-                    const days = obj.schedule.map(entry => entry.day);
-                    days_ids.push({id: obj._id, days: days});
+                    const days = obj.schedule.map(entry => entry.title);
+                    const from = obj.schedule.map(entry => (entry.from !== undefined ? entry.from : null)).filter(value => value !== null);
+                    const to = obj.schedule.map(entry => (entry.to !== undefined ? entry.to : null)).filter(value => value !== null);
+                    const all_day = obj.schedule.map(entry => (entry.isAllDay !== undefined ? entry.isAllDay : null)).filter(value => value !== null)
+                    const allDaysOfWeek = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+                    days_ids.push({
+                        id: obj._id,
+                        days: days,
+                        from: from[0],
+                        to: to[0],
+                        all_day: all_day[0],
+                        week_days: allDaysOfWeek
+                    });
                 }
             }
-            const finalarray = [];
-            await Promise.all(days_ids.map(async (item) => {
-                if (scheduleFilter)
-                    await Promise.all(scheduleFilter.map(async (day) => {
-                        if (item.days.some(day => scheduleFilter.includes(day))) {
-                            finalarray.push(item.id);
+            const final_array = [];
+            if (scheduleFilter) {
+                await Promise.all(days_ids.map(async (item) => {
+                    if (scheduleFilter.Days && scheduleFilter.isAllDay) {
+                        const days = scheduleFilter.Days;
+                        for (const day of days) {
+                            if ((item.days && item.days.some(dayItem => dayItem === day)) && (item.all_day === true)) {
+                                final_array.push(await Organisations.find({
+                                    _id: item.id,
+                                    filter
+                                }).populate('dealer_id')
+                                    .populate('categoryId')
+                                    .populate('typeServices'))
+                            }
                         }
-                    }));
-            }));
-            if (finalarray.length !== 0) {
-                res.status(200).json(finalarray);
+                    }
+                    if (scheduleFilter.Days) {
+                        const days = scheduleFilter.Days;
+                        for (const day of days) {
+                            if ((item.days && item.days.some(dayItem => dayItem === day))) {
+                                final_array.push(await Organisations.find({
+                                    _id: item.id,
+                                    filter
+                                }).populate('dealer_id')
+                                    .populate('categoryId')
+                                    .populate('typeServices'))
+                            }
+                        }
+                    }
+                    //
+                    if (scheduleFilter.isNowWork) {
+                        const startTime = item.from
+                        const endTime = item.to
+                        if (currentTime >= startTime && currentTime <= endTime && item.days && item.days.some(dayItem => dayItem === todayDay)) {
+                            console.log(item.id)
+                            final_array.push(await Organisations.find({
+                                    _id: item.id,
+                                    filter
+                                }).populate('dealer_id')
+                                    .populate('categoryId')
+                                    .populate('typeServices')
+                            )
+                        }
+                    }
+                    //
+                    if (scheduleFilter.isAllDay) {
+                        const days = item.week_days;
+                        for (const day of days) {
+                            if ((item.all_day === true)) {
+                                final_array.push(await Organisations.find({
+                                    _id: item.id,
+                                    filter
+                                }).populate('dealer_id')
+                                    .populate('categoryId')
+                                    .populate('typeServices'))
+                            }
+                            break
+                        }
+                    }
+                    // if (allDay) {
+                    //     const days = item.week_days
+                    //     if ((item.days && item.days.some(dayItem => dayItem === day)) || (item.all_day && item.all_day.some(dayItem => dayItem === day))) {
+                    //         final_array.push(await Organisations.find({
+                    //             _id: item.id,
+                    //             filter
+                    //         }).populate('dealer_id')
+                    //             .populate('categoryId')
+                    //             .populate('typeServices'))
+                    //     }
+                    //     //
+                    // }
+                }))
             }
-            if (finalarray.length === 0) {
-                res.status(200).json(query)
+            if (!scheduleFilter) {
+                final_array.push(...await Organisations.find(
+                    filter
+                ).populate('dealer_id')
+                    .populate('categoryId')
+                    .populate('typeServices'))
+            }
+            if (final_array.length === 0) {
+                res.status(300).json({
+                    error: 'Список организаций пуст.'
+                })
+            }
+            res.status(200).json(final_array);
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static GetPromotions = async (req, res, next) => {
+        try {
+
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static isCreated = async (req, res, next) => {
+        try {
+            const {user_id} = req;
+            const orgToCheck = await Organisations.find({
+                dealer_id: user_id
+            });
+            if (orgToCheck.length === 0) {
+                res.status(200).json({
+                    createdStatus: false
+                })
+            }
+            if (orgToCheck.length >= 1) {
+                res.status(200).json({
+                    createdStatus: true
+                })
             }
         } catch (e) {
             e.status = 401;
             next(e);
         }
     }
-
 }
 
 
 export default OrganisationsController;
+
+
+// 64f5b47e95355c13fc430235 category
+//  64f5b50dedf61fbf3f020a29 64f5b516edf61fbf3f020a2a service1
+
+// 64f5b4d595355c13fc430237  64f5b77dedf61fbf3f020a2e service 2

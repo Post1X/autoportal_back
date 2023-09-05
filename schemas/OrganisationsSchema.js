@@ -7,22 +7,18 @@ const OrganisationsSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Dealers'
     },
-    category_id: {
+    categoryId: {
         type: Schema.Types.ObjectId,
         ref: 'Categories'
     },
-    service_id: {
+    typeServices: [{
         type: Schema.Types.ObjectId,
         ref: 'Services'
-    },
-    extservices_id: {
-        type: Schema.Types.Array,
-        ref: 'ExtServices'
-    },
-    title: {
+    }],
+    name: {
         type: Schema.Types.String
     },
-    model_names: {
+    brandsCars: {
         type: Schema.Types.Array
     },
     city: {
@@ -37,27 +33,27 @@ const OrganisationsSchema = new Schema({
     lon: {
         type: Schema.Types.String
     },
-    phone_number: {
+    mainPhone: {
         type: Schema.Types.String
     },
-    wa_number: {
+    whatsApp: {
         type: Schema.Types.String
     },
-    additional_info: {
+    employeers: {
         type: Schema.Types.Array
     },
-    short_description: {
+    description: {
         type: Schema.Types.String,
         maxLength: 255
     },
     schedule: {
         type: Schema.Types.Array
     },
-    photo_array: {
+    photos: {
         type: Schema.Types.Array
     },
-    logo_img: {
-        type: Schema.Types.String
+    logo: {
+        type: Schema.Types.Mixed
     }
 })
 

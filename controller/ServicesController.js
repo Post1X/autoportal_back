@@ -1,5 +1,4 @@
 import Services from "../schemas/ServicesSchema";
-import ExtServices from "../schemas/ExtServicesSchema";
 
 class ServicesController {
     static CreateService = async (req, res, next) => {
@@ -19,9 +18,10 @@ class ServicesController {
     static CreateExtService = async (req, res, next) => {
         try {
             const {service_id, title} = req.body;
-            const newExtService = new ExtServices({
+            const newExtService = new Services({
                 service_id: service_id,
-                title: title
+                title: title,
+                is_extended: true
             })
             await newExtService.save();
             res.status(200).json('ok')
@@ -41,6 +41,15 @@ class ServicesController {
             res.status(200).json(
                 services
             )
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static getExtServices = async (req, res, next) => {
+        try {
+
         } catch (e) {
             e.status = 401;
             next(e);

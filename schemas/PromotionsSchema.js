@@ -3,17 +3,17 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const PromotionsSchema = new Schema({
-    organisation_id: {
+    organizationId: {
         type: Schema.Types.ObjectId,
         ref: 'Organisations'
     },
-    text: {
+    description: {
         type: Schema.Types.String
     },
-    from: {
+    startPromo: {
         type: Schema.Types.String
     },
-    to: {
+    endPromo: {
         type: Schema.Types.String
     }
 })
