@@ -1,6 +1,8 @@
 import Clients from "../schemas/ClientsSchema";
 import argon2 from 'argon2'
 import jwt from "jsonwebtoken";
+import JWT from "jsonwebtoken";
+import makeCall from "../utilities/call";
 
 class ClientsController {
     static RegisterClient = async (req, res, next) => {
@@ -83,6 +85,116 @@ class ClientsController {
                 .select('email')
             res.status(200).json(
                 user
+            )
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static registerViaPhone = async (req, res, next) => {
+        try {
+            const {phone_number} = req.body;
+            const buyer = await Clients.findOne({
+                phone_number: phone_number
+            })
+
+            function generateRandomNumberString() {
+                let result = '';
+                for (let i = 0; i < 4; i++) {
+                    const randomNumber = Math.floor(Math.random() * 10);
+
+                    result += randomNumber.toString();
+                }
+                return result;
+            }
+
+            const code = generateRandomNumberString();
+            await makeCall(phone_number, code)
+            if (!buyer) {
+                const newBuyer = new Clients({
+                    phone_number: phone_number,
+                    code: code,
+                    number_activated: false
+                })
+                await newBuyer.save();
+            }
+            if (buyer) {
+                await Clients.findOneAndUpdate({
+                    phone_number: phone_number
+                }, {
+                    code: code
+                })
+            }
+            res.status(200).json({
+                message: 'Скоро вам поступит звонок. Нужно ввести последние 4 цифры.'
+            })
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static confirmNumber = async (req, res, next) => {
+        try {
+            const JWT_SECRET = process.env.JWT_SECRET;
+            const {phone_number, confCode} = req.body;
+            const buyer = await Clients.findOne({
+                phone_number
+            });
+            if (confCode !== buyer.code) {
+                res.status(301).json({
+                    error: 'Неправильный код. Повторите попытку'
+                })
+            }
+            if (confCode === buyer.code) {
+                await Clients.findOneAndUpdate({
+                    phone_number: phone_number
+                }, {
+                    code: null
+                })
+                const token = JWT.sign({ //
+                    phone_number: phone_number,
+                    user_id: buyer._id
+                }, JWT_SECRET);
+                res.status(200).json({
+                    token: token,
+                    user_data: buyer
+                })
+            }
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static addInfo = async (req, res, next) => {
+        try {
+            const {phone} = req.query;
+            const {full_name, city, email} = req.body;
+            await Clients.findOneAndUpdate({
+                phone_number: phone
+            }, {
+                full_name: full_name,
+                city: city,
+                email: email
+            })
+            res.status(200).json({
+                message: 'success'
+            })
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static loginAsGuest = async (req, res, next) => {
+        try {
+            const token = jwt.sign({
+                isGuest: true,
+            }, process.env.JWT_SECRET);
+            res.status(200).json(
+                token
             )
         } catch (e) {
             e.status = 401;

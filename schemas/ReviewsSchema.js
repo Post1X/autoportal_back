@@ -7,13 +7,16 @@ const ReviewsSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Organisations'
     },
+    date: {
+        type: Schema.Types.String
+    },
     rating: {
         type: Schema.Types.String
     },
-    text: {
+    comment: {
         type: Schema.Types.String
     },
-    user_name: {
+    fullName: {
         type: Schema.Types.String
     }
 })

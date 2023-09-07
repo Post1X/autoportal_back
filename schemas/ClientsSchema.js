@@ -17,6 +17,10 @@ const ClientsSchema = new Schema({
     },
     password: {
         type: Schema.Types.String
+    },
+    code: {
+        type: Schema.Types.String,
+        default: null
     }
 })
 

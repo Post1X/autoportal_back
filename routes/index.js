@@ -8,6 +8,7 @@ import filter from "./filter";
 import cars from "./cars"
 import promotion from "./promotion";
 import report from "./report";
+import reviews from "./reviews";
 
 import authorization from "../middlewares/validation";
 
@@ -20,10 +21,11 @@ router.use('/cities', authorization, cities);
 router.use('/organisations', authorization, organisations);
 router.use('/services', authorization, services);
 router.use('/categories', authorization, categories);
-router.use('/banners', banners);
-router.use('/filter', filter);
-router.use('/cars', cars);
-router.use('/promotions', promotion);
-router.use('/router', report)
+router.use('/banners', authorization, banners);
+router.use('/filter', authorization, filter);
+router.use('/cars', authorization, cars);
+router.use('/reviews', authorization, reviews)
+router.use('/promotion', authorization, promotion);
+router.use('/report', authorization, report)
 
 export default router;

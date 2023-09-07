@@ -1,5 +1,6 @@
 import Organisations from "../schemas/OrganisationsSchema";
 import moment from "moment-timezone";
+import Reviews from "../schemas/ReviewsSchema";
 
 class OrganisationsController {
     static CreateOrganisation = async (req, res, next) => {
@@ -152,16 +153,25 @@ class OrganisationsController {
     static GetSingleOrganisation = async (req, res, next) => {
         try {
             const {id} = req.query;
-            // const {user_id} = req;
+            const reviews = await Reviews.find({
+                organisation_id: id
+            });
+            const final_rating = reviews.map((item) => {
+                return Number(item.rating);
+            });
+            const sum = final_rating.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+            const rating = Math.round(sum / final_rating.length);
+
             const organisation = await Organisations.findOne({
                 _id: id
             })
                 .populate('dealer_id')
                 .populate('categoryId')
-                .populate('typeServices')
-            res.status(200).json(
-                organisation
-            )
+                .populate('typeServices');
+            res.status(200).json({
+                organisation,
+                rating: rating
+            });
         } catch (e) {
             e.status = 401;
             next(e);
@@ -213,7 +223,7 @@ class OrganisationsController {
                 }
             }
             const final_array = [];
-            if (scheduleFilter) {
+            if (!scheduleFilter) {
                 await Promise.all(days_ids.map(async (item) => {
                     if (scheduleFilter.Days && scheduleFilter.isAllDay) {
                         const days = scheduleFilter.Days;
@@ -271,21 +281,9 @@ class OrganisationsController {
                             break
                         }
                     }
-                    // if (allDay) {
-                    //     const days = item.week_days
-                    //     if ((item.days && item.days.some(dayItem => dayItem === day)) || (item.all_day && item.all_day.some(dayItem => dayItem === day))) {
-                    //         final_array.push(await Organisations.find({
-                    //             _id: item.id,
-                    //             filter
-                    //         }).populate('dealer_id')
-                    //             .populate('categoryId')
-                    //             .populate('typeServices'))
-                    //     }
-                    //     //
-                    // }
                 }))
             }
-            if (!scheduleFilter) {
+            {
                 final_array.push(...await Organisations.find(
                     filter
                 ).populate('dealer_id')
@@ -297,7 +295,22 @@ class OrganisationsController {
                     error: 'Список организаций пуст.'
                 })
             }
-            res.status(200).json(final_array);
+            const modifiedOrganisations = await Promise.all(final_array.map(async (item) => {
+                const reviews = await Reviews.find({
+                    organisation_id: item._id
+                });
+                console.log(reviews)
+                const final_rating = reviews.map((item) => {
+                    return Number(item.rating);
+                });
+                const sum = final_rating.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+                console.log(sum)
+                const rating = Math.round(sum / final_rating.length);
+                return {
+                    ...item.toObject(), rating: rating
+                }
+            }))
+            res.status(200).json(modifiedOrganisations);
         } catch (e) {
             e.status = 401;
             next(e);

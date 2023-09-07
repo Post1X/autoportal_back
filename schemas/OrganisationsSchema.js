@@ -54,6 +54,10 @@ const OrganisationsSchema = new Schema({
     },
     logo: {
         type: Schema.Types.Mixed
+    },
+    rating: {
+        type: Schema.Types.Number,
+        default: 0
     }
 })
 

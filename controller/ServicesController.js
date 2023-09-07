@@ -46,15 +46,6 @@ class ServicesController {
             next(e);
         }
     }
-    //
-    static getExtServices = async (req, res, next) => {
-        try {
-
-        } catch (e) {
-            e.status = 401;
-            next(e);
-        }
-    }
 }
 
 export default ServicesController;

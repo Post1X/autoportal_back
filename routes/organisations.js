@@ -12,6 +12,8 @@ router.get('/my', uploadFields, OrganisationsController.GetOrganisation);
 router.post('/', OrganisationsController.FilterOrganisation);
 router.get('/', OrganisationsController.GetSingleOrganisation);
 router.get('/favorites', FavoritesController.GetOrganisations);
-router.get('/promotions')
+router.post('/favorites', FavoritesController.AddOrganisationToFav);
+router.delete('/favorites', FavoritesController.DeleteFavOrganisation);
+
 
 export default router;

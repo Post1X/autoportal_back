@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import {log} from "debug";
 //
 const EXCLUDE = ['/register/client', '/login/client', '/register/dealer', '/login/dealer', '/login/admin']
 
@@ -11,11 +12,7 @@ const authorization = async (req, res, next) => {
             return;
         }
         if (!authorization) {
-            console.log(req.path)
-            res.status(400).json({
-                error: 'no_token',
-                description: 'Непредвиденная ошибка. Свяжитесь с администрацией.'
-            })
+            next();
         }
         const {JWT_SECRET} = process.env;
         const token = authorization.replace('Bearer ', '');
@@ -24,8 +21,11 @@ const authorization = async (req, res, next) => {
         if (userInfo.isAdmin) {
             req.isAdmin = userInfo.isAdmin
         }
-        if (userInfo.isSeller) {
-            req.isSeller = userInfo.isSeller
+        if (userInfo.isDealer) {
+            req.isDealer = userInfo.isDealer
+        }
+        if (userInfo.isGuest) {
+            req.isGuest = userInfo.isGuest
         }
         next();
     } catch (e) {
