@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/autoportal_back.iml" filepath="$PROJECT_DIR$/.idea/autoportal_back.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../prostopodari_api/.idea/server.iml" filepath="$PROJECT_DIR$/../prostopodari_api/.idea/server.iml" />
     </modules>
   </component>
 </project>

@@ -46,6 +46,21 @@ class ServicesController {
             next(e);
         }
     }
+    //
+    static deleteSerivce = async (req, res, next) => {
+        try {
+            const {serviceId} = req.query;
+            await Services.deleteOne({
+                _id: serviceId
+            })
+            res.status(200).json({
+                message: 'success'
+            })
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
 }
 
 export default ServicesController;

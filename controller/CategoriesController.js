@@ -31,7 +31,7 @@ class CategoriesController {
     //
     static FilterData = async (req, res, next) => {
         try {
-            const { categoryId } = req.query;
+            const {categoryId} = req.query;
             const services = await Services.find({
                 category_id: categoryId
             });
@@ -56,6 +56,21 @@ class CategoriesController {
                 brandCar: cars
             };
             res.status(200).json(filteredObj);
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static deleteCategory = async (req, res, next) => {
+        try {
+            const {categoryId} = req.query;
+            await Categories.deleteOne({
+                _id: categoryId
+            });
+            res.status(200).json({
+                message: 'success'
+            })
         } catch (e) {
             e.status = 401;
             next(e);

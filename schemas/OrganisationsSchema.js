@@ -58,6 +58,9 @@ const OrganisationsSchema = new Schema({
     rating: {
         type: Schema.Types.Number,
         default: 0
+    },
+    is_banned: {
+        type: Schema.Types.Boolean
     }
 })
 

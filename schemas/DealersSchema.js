@@ -20,6 +20,14 @@ const DealersSchema = new Schema({
     },
     code: {
         type: Schema.Types.String
+    },
+    subscription_status: {
+        type: Schema.Types.Boolean,
+        default: false
+    },
+    is_banned: {
+        type: Schema.Types.Boolean,
+        default: false
     }
 })
 

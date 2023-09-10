@@ -9,6 +9,8 @@ import cars from "./cars"
 import promotion from "./promotion";
 import report from "./report";
 import reviews from "./reviews";
+import subscribe from "./subscribe";
+import admin from "./admin";
 
 import authorization from "../middlewares/validation";
 
@@ -27,5 +29,7 @@ router.use('/cars', authorization, cars);
 router.use('/reviews', authorization, reviews)
 router.use('/promotion', authorization, promotion);
 router.use('/report', authorization, report)
+router.use('/subscribe', authorization, subscribe)
+router.use('/admin', authorization, admin)
 
 export default router;
