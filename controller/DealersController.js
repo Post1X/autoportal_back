@@ -3,7 +3,6 @@ import argon2 from 'argon2'
 import jwt from "jsonwebtoken";
 import JWT from "jsonwebtoken";
 import makeCall from "../utilities/call";
-import {log} from "debug";
 
 class DealersController {
     static RegisterDealer = async (req, res, next) => {
@@ -105,6 +104,7 @@ class DealersController {
                 phone_number: phone_number
             })
             console.log(phone_number)
+
             function generateRandomNumberString() {
                 let result = '';
                 for (let i = 0; i < 4; i++) {
@@ -168,6 +168,26 @@ class DealersController {
                     user_data: buyer
                 })
             }
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //я
+    static addData = async (req, res, next) => {
+        try {
+            const {full_name, city, email} = req.body;
+            const {phone_number} = req.query;
+            await Dealers.findOneAndUpdate({
+                phone_number: phone_number
+            }, {
+                full_name: full_name,
+                city: city,
+                email: email
+            });
+            res.status(200).json({
+                message: 'success'
+            })
         } catch (e) {
             e.status = 401;
             next(e);

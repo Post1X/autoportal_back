@@ -1,3 +1,5 @@
+import CitiesController from "../controller/CitiesController";
+
 const express = require('express');
 import ClientsController from "../controller/ClientsController";
 import DealersController from "../controller/DealersController";
@@ -20,6 +22,7 @@ router.post('/register/dealer', DealersController.RegisterDealer);
 router.post('/login/dealer', uploadFields, DealersController.LoginDealer);
 router.post('/login/dealer/make-call', DealersController.registerViaPhone)
 router.post('/login/dealer/confirm', DealersController.confirmNumber)
+router.post('/login/dealer/data', DealersController.addData)
 
 // admin
 
