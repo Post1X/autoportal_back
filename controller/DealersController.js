@@ -3,6 +3,7 @@ import argon2 from 'argon2'
 import jwt from "jsonwebtoken";
 import JWT from "jsonwebtoken";
 import makeCall from "../utilities/call";
+import {log} from "debug";
 
 class DealersController {
     static RegisterDealer = async (req, res, next) => {
@@ -103,7 +104,7 @@ class DealersController {
             const buyer = await Dealers.findOne({
                 phone_number: phone_number
             })
-
+            console.log(phone_number)
             function generateRandomNumberString() {
                 let result = '';
                 for (let i = 0; i < 4; i++) {
@@ -135,7 +136,7 @@ class DealersController {
                 message: 'Скоро вам поступит звонок. Нужно ввести последние 4 цифры.'
             })
         } catch (e) {
-            e.status = 401;
+            e.status = 405;
             next(e);
         }
     }
