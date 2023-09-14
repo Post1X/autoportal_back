@@ -68,6 +68,7 @@ class OrganisationsController {
             }).populate('dealer_id')
                 .populate('categoryId')
                 .populate('typeServices')
+                .populate('brandsCars')
             res.status(200).json(organisations);
         } catch (e) {
             e.status = 401;
@@ -167,7 +168,8 @@ class OrganisationsController {
             })
                 .populate('dealer_id')
                 .populate('categoryId')
-                .populate('typeServices');
+                .populate('typeServices')
+                .populate('brandsCars')
             res.status(200).json({
                 organisation,
                 rating: rating
@@ -234,7 +236,8 @@ class OrganisationsController {
                                     filter
                                 }).populate('dealer_id')
                                     .populate('categoryId')
-                                    .populate('typeServices'))
+                                    .populate('typeServices')
+                                    .populate('brandsCars'))
                             }
                         }
                     }
@@ -247,7 +250,8 @@ class OrganisationsController {
                                     filter
                                 }).populate('dealer_id')
                                     .populate('categoryId')
-                                    .populate('typeServices'))
+                                    .populate('typeServices')
+                                    .populate('brandsCars'))
                             }
                         }
                     }
@@ -263,6 +267,7 @@ class OrganisationsController {
                                 }).populate('dealer_id')
                                     .populate('categoryId')
                                     .populate('typeServices')
+                                    .populate('brandsCars')
                             )
                         }
                     }
@@ -276,7 +281,8 @@ class OrganisationsController {
                                     filter
                                 }).populate('dealer_id')
                                     .populate('categoryId')
-                                    .populate('typeServices'))
+                                    .populate('typeServices')
+                                    .populate('brandsCars'))
                             }
                             break
                         }
@@ -288,7 +294,8 @@ class OrganisationsController {
                     filter
                 ).populate('dealer_id')
                     .populate('categoryId')
-                    .populate('typeServices'))
+                    .populate('typeServices')
+                    .populate(brandsCars))
             }
             if (final_array.length === 0) {
                 res.status(300).json({
