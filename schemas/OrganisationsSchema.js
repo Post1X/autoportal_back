@@ -18,9 +18,10 @@ const OrganisationsSchema = new Schema({
     name: {
         type: Schema.Types.String
     },
-    brandsCars: {
-        type: Schema.Types.Array
-    },
+    brandsCars: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Cars'
+    }],
     city: {
         type: Schema.Types.String
     },

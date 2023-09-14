@@ -143,7 +143,6 @@ class AdminController {
                     free_period: duration
                 })
             }
-            ;
             res.status(200).json({
                 message: 'success'
             });

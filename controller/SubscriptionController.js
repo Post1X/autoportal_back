@@ -1,4 +1,5 @@
 import Dealers from "../schemas/DealersSchema";
+import Subscription from "../schemas/SubscriptionSchema";
 
 class SubscriptionController {
     static checkSub = async (req, res, next) => {
@@ -45,6 +46,9 @@ class SubscriptionController {
     static getSubYear = async (req, res, next) => {
         try {
             const {user_id} = req;
+            const sub = await Subscription.find(
+
+            );
             await Dealers.findOneAndUpdate({
                 _id: user_id
             }, {
