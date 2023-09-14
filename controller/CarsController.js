@@ -5,7 +5,7 @@ class CarsController {
         try {
             const {model} = req.body;
             const newCar = new Cars({
-                model_name: model
+                title: model
             });
             await newCar.save();
             res.status(200).json({

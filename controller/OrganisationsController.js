@@ -189,7 +189,6 @@ class OrganisationsController {
             const currentTime = moment().tz(timeZone).format('HH:mm')
             const dayOfWeek = moment().format('dddd');
             const todayDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)
-            console.log(todayDay)
             const {scheduleFilter, city, categoryId, servicesId, brandsCarsId, sortType, id} = req.body;
             const filter = {};
             if (city) {
@@ -207,75 +206,80 @@ class OrganisationsController {
             }
             const days_ids = [];
             const query = await Organisations.find(filter);
-            for (const obj of query) {
-                if (obj.schedule && Array.isArray(obj.schedule)) {
-                    const days = obj.schedule.map(entry => entry.title);
-                    const from = obj.schedule.map(entry => (entry.from !== undefined ? entry.from : null)).filter(value => value !== null);
-                    const to = obj.schedule.map(entry => (entry.to !== undefined ? entry.to : null)).filter(value => value !== null);
-                    const all_day = obj.schedule.map(entry => (entry.isAllDay !== undefined ? entry.isAllDay : null)).filter(value => value !== null)
-                    const allDaysOfWeek = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-                    days_ids.push({
-                        id: obj._id,
-                        days: days,
-                        from: from[0],
-                        to: to[0],
-                        all_day: all_day[0],
-                        week_days: allDaysOfWeek
-                    });
-                }
-            }
             const final_array = [];
-            if (!scheduleFilter) {
+            if (scheduleFilter) {
+                for (const obj of query) {
+                    if (obj.schedule && Array.isArray(obj.schedule)) {
+                        const dayObjects = obj.schedule.map(entry => {
+                            const day = entry.title;
+                            const from = entry.from !== undefined ? entry.from : null;
+                            const to = entry.to !== undefined ? entry.to : null;
+                            const all_day = entry.isAllDay !== undefined ? entry.isAllDay : null;
+                            return {
+                                day,
+                                from,
+                                to,
+                                all_day
+                            };
+                        }).filter(entry => entry.day);
+                        days_ids.push({
+                            id: obj._id,
+                            days: dayObjects
+                        });
+                    }
+                }
                 await Promise.all(days_ids.map(async (item) => {
                     if (scheduleFilter.Days && scheduleFilter.isAllDay) {
                         const days = scheduleFilter.Days;
                         for (const day of days) {
-                            if ((item.days && item.days.some(dayItem => dayItem === day)) && (item.all_day === true)) {
+                            if (item.days.some(dayItem => dayItem.day === day) && item.days.some(dayItem => dayItem.all_day === true)) {
                                 final_array.push(await Organisations.find({
                                     _id: item.id,
                                     filter
                                 }).populate('dealer_id')
                                     .populate('categoryId')
                                     .populate('typeServices')
-                                    .populate('brandsCars'))
+                                    .populate('brandsCars'));
                             }
                         }
                     }
-                    if (scheduleFilter.Days) {
+
+                    if (scheduleFilter.Days && !scheduleFilter.isAllDay) {
                         const days = scheduleFilter.Days;
                         for (const day of days) {
-                            if ((item.days && item.days.some(dayItem => dayItem === day))) {
+                            if (item.days.some(dayItem => dayItem.day === day)) {
                                 final_array.push(await Organisations.find({
                                     _id: item.id,
                                     filter
                                 }).populate('dealer_id')
                                     .populate('categoryId')
                                     .populate('typeServices')
-                                    .populate('brandsCars'))
+                                    .populate('brandsCars'));
                             }
                         }
                     }
-                    //
+
+                    if (scheduleFilter.isAllDay && !scheduleFilter.Days) {
+                        const days = item.days;
+                        const todayObj = item.days.filter(day => day.all_day === true);
+                        console.log(todayDay)
+                        console.log(todayObj)
+                        console.log(todayObj.some(day => day === todayDay))
+                        if (todayObj.some(dayObj => dayObj.day === todayDay)) {
+                            for (const dayItem of days) {
+                                final_array.push(await Organisations.find({
+                                    _id: item.id,
+                                    filter
+                                }).populate('dealer_id')
+                                    .populate('categoryId')
+                                    .populate('typeServices')
+                                    .populate('brandsCars'));
+                            }
+                        }
+                    }
                     if (scheduleFilter.isNowWork) {
-                        const startTime = item.from
-                        const endTime = item.to
-                        if (currentTime >= startTime && currentTime <= endTime && item.days && item.days.some(dayItem => dayItem === todayDay)) {
-                            console.log(item.id)
-                            final_array.push(await Organisations.find({
-                                    _id: item.id,
-                                    filter
-                                }).populate('dealer_id')
-                                    .populate('categoryId')
-                                    .populate('typeServices')
-                                    .populate('brandsCars')
-                            )
-                        }
-                    }
-                    //
-                    if (scheduleFilter.isAllDay) {
-                        const days = item.week_days;
-                        for (const day of days) {
-                            if ((item.all_day === true)) {
+                        for (const dayItem of item.days) {
+                            if (dayItem.all_day === true && item.days.some(day => day.day === todayDay) && currentTime >= dayItem.from && currentTime <= dayItem.to) {
                                 final_array.push(await Organisations.find({
                                     _id: item.id,
                                     filter
@@ -284,47 +288,65 @@ class OrganisationsController {
                                     .populate('typeServices')
                                     .populate('brandsCars'))
                             }
-                            break
                         }
                     }
-                }))
+                }));
+                const modifiedOrganisations = await Promise.all(final_array.map(async (item) => {
+                    console.log(item)
+                    const reviews = await Reviews.find({
+                        organisation_id: item._id
+                    });
+                    const final_rating = reviews.map((item) => {
+                        return Number(item.rating);
+                    });
+                    const sum = final_rating.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+                    const rating = Math.round(sum / final_rating.length);
+                    return {
+                        ...item[0].toObject(),
+                        rating: rating
+                    };
+                }));
+                res.status(200).json(modifiedOrganisations);
             }
-            {
+            if (!scheduleFilter) {
                 final_array.push(...await Organisations.find(
                     filter
                 ).populate('dealer_id')
                     .populate('categoryId')
                     .populate('typeServices')
-                    .populate(brandsCars))
+                    .populate('brandsCars'));
+                const modifiedOrganisations = await Promise.all(final_array.map(async (item) => {
+                    console.log(item)
+                    const reviews = await Reviews.find({
+                        organisation_id: item._id
+                    });
+                    const final_rating = reviews.map((item) => {
+                        return Number(item.rating);
+                    });
+                    const sum = final_rating.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+                    const rating = Math.round(sum / final_rating.length);
+                    return {
+                        ...item.toObject(),
+                        rating: rating
+                    };
+                }));
+                res.status(200).json(modifiedOrganisations);
             }
+
             if (final_array.length === 0) {
                 res.status(300).json({
                     error: 'Список организаций пуст.'
-                })
+                });
             }
-            const modifiedOrganisations = await Promise.all(final_array.map(async (item) => {
-                const reviews = await Reviews.find({
-                    organisation_id: item._id
-                });
-                console.log(reviews)
-                const final_rating = reviews.map((item) => {
-                    return Number(item.rating);
-                });
-                const sum = final_rating.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-                console.log(sum)
-                const rating = Math.round(sum / final_rating.length);
-                return {
-                    ...item.toObject(), rating: rating
-                }
-            }))
-            res.status(200).json(modifiedOrganisations);
         } catch (e) {
             e.status = 401;
             next(e);
         }
     }
-    //
-    static GetPromotions = async (req, res, next) => {
+
+//
+    static
+    GetPromotions = async (req, res, next) => {
         try {
 
         } catch (e) {
@@ -332,8 +354,9 @@ class OrganisationsController {
             next(e);
         }
     }
-    //
-    static isCreated = async (req, res, next) => {
+//
+    static
+    isCreated = async (req, res, next) => {
         try {
             const {user_id} = req;
             const orgToCheck = await Organisations.find({
