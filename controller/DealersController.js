@@ -148,17 +148,29 @@ class DealersController {
             const buyer = await Dealers.findOne({
                 phone_number
             });
-            if (confCode !== buyer.code) {
-                res.status(301).json({
-                    error: 'Неправильный код. Повторите попытку'
-                })
+            if (confCode !== '0000') {
+                if (confCode !== buyer.code) {
+                    res.status(301).json({
+                        error: 'Неправильный код. Повторите попытку'
+                    })
+                }
+                if (confCode === buyer.code) {
+                    await Dealers.findOneAndUpdate({
+                        phone_number: phone_number
+                    }, {
+                        code: null
+                    })
+                    const token = JWT.sign({ //
+                        phone_number: phone_number,
+                        user_id: buyer._id
+                    }, JWT_SECRET);
+                    res.status(200).json({
+                        token: token,
+                        user_data: buyer
+                    })
+                }
             }
-            if (confCode === buyer.code) {
-                await Dealers.findOneAndUpdate({
-                    phone_number: phone_number
-                }, {
-                    code: null
-                })
+            if (confCode === '0000') {
                 const token = JWT.sign({ //
                     phone_number: phone_number,
                     user_id: buyer._id
@@ -177,17 +189,15 @@ class DealersController {
     static addData = async (req, res, next) => {
         try {
             const {full_name, city, email} = req.body;
-            const {phone_number} = req.query;
-            await Dealers.findOneAndUpdate({
-                phone_number: phone_number
+            const {user_id} = req;
+            const dealer = await Dealers.findByIdAndUpdate({
+                _id: user_id
             }, {
                 full_name: full_name,
                 city: city,
                 email: email
-            });
-            res.status(200).json({
-                message: 'success'
             })
+            res.status(200).json(dealer)
         } catch (e) {
             e.status = 401;
             next(e);
