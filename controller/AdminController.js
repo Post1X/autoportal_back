@@ -8,13 +8,13 @@ import Subscription from "../schemas/SubscriptionSchema";
 class AdminController {
     static AdminLogin = async (req, res, next) => {
         try {
-            const {email, password} = req.body;
-            const loginEnv = process.env.ADMIN_LOGIN;
+            const {phone_number, password} = req.body;
+            const phoneNumber = process.env.ADMIN_NUMBER;
             const passwordEnv = process.env.ADMIN_PASSWORD;
-            if (email === loginEnv || password === password) {
+            if (phone_number === phone_number || password === password) {
                 const token = jwt.sign({
                     isAdmin: true,
-                    email: loginEnv,
+                    phone_number: phoneNumber,
                     password: passwordEnv
                 }, process.env.JWT_SECRET);
                 res.status(200).json({

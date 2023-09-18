@@ -20,18 +20,21 @@ class OrganisationsController {
             } = req.body;
             const {user_id} = req;
             const photoArray = [];
-            // const logo_img = req.files.find(file => file.fieldname === 'logo_img');
-            // if (req.files) {
-            //     for (let i = 0; i < req.files.length - 1; i++) {
-            //         const file = req.files[i];
-            //         if (file.fieldname === `photo_${i}`) {
-            //             const logoFile = req.files.find(f => f.fieldname === `photo_${i}`);
-            //             const parts = logoFile.path.split('public');
-            //             const result = parts[1].substring(1);
-            //             photoArray.push(result);
-            //         }
-            //     }
-            // }
+            let finalLogo;
+            if (req.files) {
+                const logo_img = req.files.find(file => file.fieldname === 'logo_img');
+                const parts = logo_img.path.split('public');
+                finalLogo = `http://194.67.125.33:3001/${parts[1].substring(1)}`
+                for (let i = 0; i < req.files.length - 1; i++) {
+                    const file = req.files[i];
+                    if (file.fieldname === `photo_${i}`) {
+                        const logoFile = req.files.find(f => f.fieldname === `photo_${i}`);
+                        const parts = logoFile.path.split('public');
+                        const result = `http://194.67.125.33:3001/${parts[1].substring(1)}`;
+                        photoArray.push(result);
+                    }
+                }
+            }
             const newOrganisation = new Organisations({
                 dealer_id: user_id,
                 name: name,
@@ -40,15 +43,13 @@ class OrganisationsController {
                 brandsCars: brandsCars,
                 city: city,
                 address: address,
-                // lon: lon,
-                // lat: lat,
                 mainPhone: mainPhone,
                 whatsApp: whatsApp,
                 employeers: employeers,
                 description: description,
                 schedule: schedule,
                 photos: photoArray,
-                // logo: logo_img
+                logo: finalLogo
             })
             await newOrganisation.save();
             res.status(200).json({
@@ -94,19 +95,21 @@ class OrganisationsController {
             const {user_id} = req;
             const {organisation_id} = req.query;
             const photoArray = [];
-            const logo_img = req.files.find(file => file.fieldname === 'logo_img');
-            for (let i = 0; i < req.files.length - 1; i++) {
-                const file = req.files[i];
-                if (file.fieldname === `photo_${i}`) {
-                    const logoFile = req.files.find(f => f.fieldname === `photo_${i}`);
-                    const parts = logoFile.path.split('public');
-                    const result = parts[1].substring(1);
-                    photoArray.push(result);
+            let finalLogo;
+            if (req.files) {
+                const logo_img = req.files.find(file => file.fieldname === 'logo_img');
+                const parts = logo_img.path.split('public');
+                finalLogo = `http://194.67.125.33:3001/${parts[1].substring(1)}`
+                for (let i = 0; i < req.files.length - 1; i++) {
+                    const file = req.files[i];
+                    if (file.fieldname === `photo_${i}`) {
+                        const logoFile = req.files.find(f => f.fieldname === `photo_${i}`);
+                        const parts = logoFile.path.split('public');
+                        const result = `http://194.67.125.33:3001/${parts[1].substring(1)}`;
+                        photoArray.push(result);
+                    }
                 }
             }
-            // const address_name = address.address_name;
-            // const lon = address.lon;
-            // const lat = address.lat;
             await Organisations.findOneAndUpdate({
                 _id: organisation_id
             }, {
@@ -125,7 +128,7 @@ class OrganisationsController {
                 description: description,
                 schedule: schedule,
                 photos: photoArray,
-                logo: logo_img
+                logo: finalLogo
             })
             res.status(200).json({
                 message: 'success'
@@ -372,6 +375,28 @@ class OrganisationsController {
                     createdStatus: true
                 })
             }
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static deletePhotos = async (req, res, next) => {
+        try {
+            const {photo, organisationId} = req.query;
+            const updatedOrganisations = await Organisations.findByIdAndUpdate(
+                organisationId,
+                {$pull: {photos: photo}},
+                {new: true}
+            );
+            if (!updatedOrganisations) {
+                return res.status(404).json({
+                    error: 'Товар не найден'
+                });
+            }
+            res.status(200).json({
+                message: 'success'
+            });
         } catch (e) {
             e.status = 401;
             next(e);

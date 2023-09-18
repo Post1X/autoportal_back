@@ -10,10 +10,12 @@ const router = express.Router();
 router.post('/my', uploadFields, OrganisationsController.CreateOrganisation);
 router.get('/my', uploadFields, OrganisationsController.GetOrganisation);
 router.post('/', OrganisationsController.FilterOrganisation);
+router.delete('/photo', OrganisationsController.deletePhotos)
 router.get('/', OrganisationsController.GetSingleOrganisation);
 router.get('/favorites', FavoritesController.GetOrganisations);
 router.post('/favorites', FavoritesController.AddOrganisationToFav);
 router.delete('/favorites', FavoritesController.DeleteFavOrganisation);
+router.get('/my/created', OrganisationsController.isCreated)
 
 
 export default router;
