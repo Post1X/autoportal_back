@@ -8,9 +8,10 @@ class CategoriesController {
             const {title} = req.body;
             console.log(req)
             const destination = `${req.files[0].destination}${req.files[0].filename}`;
+            const finalDest = `http://194.67.125.33:3001/${destination.split('public')[1]}`
             const newCategory = new Categories({
                 title: title,
-                img: destination.split('public')[1]
+                img: finalDest
             })
             await newCategory.save();
             res.status(200).json('ok')

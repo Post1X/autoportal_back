@@ -104,7 +104,6 @@ class DealersController {
                 phone_number: phone_number
             })
             console.log(phone_number)
-
             function generateRandomNumberString() {
                 let result = '';
                 for (let i = 0; i < 4; i++) {

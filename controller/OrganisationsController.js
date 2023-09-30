@@ -1,6 +1,7 @@
 import Organisations from "../schemas/OrganisationsSchema";
 import moment from "moment-timezone";
 import Reviews from "../schemas/ReviewsSchema";
+import Images from "../schemas/ImageSchema";
 
 class OrganisationsController {
     static CreateOrganisation = async (req, res, next) => {
@@ -16,25 +17,15 @@ class OrganisationsController {
                 whatsApp,
                 employeers,
                 description,
-                schedule
+                schedule,
+                logo,
+                photos
             } = req.body;
+            console.log(employeers, 'employeers')
+            console.log(schedule, 'schedule')
             const {user_id} = req;
             const photoArray = [];
             let finalLogo;
-            if (req.files) {
-                const logo_img = req.files.find(file => file.fieldname === 'logo_img');
-                const parts = logo_img.path.split('public');
-                finalLogo = `http://194.67.125.33:3001/${parts[1].substring(1)}`
-                for (let i = 0; i < req.files.length - 1; i++) {
-                    const file = req.files[i];
-                    if (file.fieldname === `photo_${i}`) {
-                        const logoFile = req.files.find(f => f.fieldname === `photo_${i}`);
-                        const parts = logoFile.path.split('public');
-                        const result = `http://194.67.125.33:3001/${parts[1].substring(1)}`;
-                        photoArray.push(result);
-                    }
-                }
-            }
             const newOrganisation = new Organisations({
                 dealer_id: user_id,
                 name: name,
@@ -48,8 +39,8 @@ class OrganisationsController {
                 employeers: employeers,
                 description: description,
                 schedule: schedule,
-                photos: photoArray,
-                logo: finalLogo
+                photos: photos,
+                logo: logo
             })
             await newOrganisation.save();
             res.status(200).json({
@@ -90,26 +81,14 @@ class OrganisationsController {
                 whatsApp,
                 employeers,
                 description,
-                schedule
+                schedule,
+                logo,
+                photos
             } = req.body;
             const {user_id} = req;
             const {organisation_id} = req.query;
             const photoArray = [];
             let finalLogo;
-            if (req.files) {
-                const logo_img = req.files.find(file => file.fieldname === 'logo_img');
-                const parts = logo_img.path.split('public');
-                finalLogo = `http://194.67.125.33:3001/${parts[1].substring(1)}`
-                for (let i = 0; i < req.files.length - 1; i++) {
-                    const file = req.files[i];
-                    if (file.fieldname === `photo_${i}`) {
-                        const logoFile = req.files.find(f => f.fieldname === `photo_${i}`);
-                        const parts = logoFile.path.split('public');
-                        const result = `http://194.67.125.33:3001/${parts[1].substring(1)}`;
-                        photoArray.push(result);
-                    }
-                }
-            }
             await Organisations.findOneAndUpdate({
                 _id: organisation_id
             }, {
@@ -127,8 +106,8 @@ class OrganisationsController {
                 employeers: employeers,
                 description: description,
                 schedule: schedule,
-                photos: photoArray,
-                logo: finalLogo
+                photos: photos,
+                logo: logo
             })
             res.status(200).json({
                 message: 'success'
@@ -199,7 +178,6 @@ class OrganisationsController {
             }
             if (categoryId) {
                 filter.category_id = categoryId;
-                console.log(categoryId)
             }
             if (servicesId) {
                 filter.service_id = servicesId
@@ -265,9 +243,6 @@ class OrganisationsController {
                     if (scheduleFilter.isAllDay && !scheduleFilter.Days) {
                         const days = item.days;
                         const todayObj = item.days.filter(day => day.all_day === true);
-                        console.log(todayDay)
-                        console.log(todayObj)
-                        console.log(todayObj.some(day => day === todayDay))
                         if (todayObj.some(dayObj => dayObj.day === todayDay)) {
                             for (const dayItem of days) {
                                 final_array.push(await Organisations.find({
@@ -295,7 +270,6 @@ class OrganisationsController {
                     }
                 }));
                 const modifiedOrganisations = await Promise.all(final_array.map(async (item) => {
-                    console.log(item)
                     const reviews = await Reviews.find({
                         organisation_id: item._id
                     });
@@ -319,7 +293,6 @@ class OrganisationsController {
                     .populate('typeServices')
                     .populate('brandsCars'));
                 const modifiedOrganisations = await Promise.all(final_array.map(async (item) => {
-                    console.log(item)
                     const reviews = await Reviews.find({
                         organisation_id: item._id
                     });
@@ -402,13 +375,25 @@ class OrganisationsController {
             next(e);
         }
     }
+    //
+    static uploadImage = async (req, res, next) => {
+        try {
+            const file = req.files.find(file => file.fieldname === 'file');
+            const parts = file.path.split('public');
+            const finalFile = `http://194.67.125.33:3001/${parts[1].substring(1)}`;
+            const newImage = new Images({
+                url: finalFile
+            });
+            await newImage.save();
+            res.status(200).json(
+                newImage.url
+            )
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
 }
 
 
 export default OrganisationsController;
-
-
-// 64f5b47e95355c13fc430235 category
-//  64f5b50dedf61fbf3f020a29 64f5b516edf61fbf3f020a2a service1
-
-// 64f5b4d595355c13fc430237  64f5b77dedf61fbf3f020a2e service 2
