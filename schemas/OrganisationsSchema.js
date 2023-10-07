@@ -62,7 +62,24 @@ const OrganisationsSchema = new Schema({
     },
     is_banned: {
         type: Schema.Types.Boolean
+    },
+    subscription_status: {
+        type: Schema.Types.Boolean,
+        default: false
+    },
+    subscription_until: {
+        type: Schema.Types.Date,
+        default: null
+    },
+    free_period: {
+        type: Schema.Types.Boolean,
+        default: true
+    },
+    period_updated: {
+        type: Schema.Types.Boolean,
+        default: false
     }
+
 })
 
 const Organisations = mongoose.model('Organisations', OrganisationsSchema);

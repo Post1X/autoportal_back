@@ -3,10 +3,16 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const SubscriptionSchema = new Schema({
-    amount: {
+    month_amount: {
+        type: Schema.Types.Number
+    },
+    year_amount: {
         type: Schema.Types.Number
     },
     free_period: {
+        type: Schema.Types.Number
+    },
+    percentage: {
         type: Schema.Types.Number
     }
 });

@@ -161,7 +161,8 @@ class DealersController {
                     })
                     const token = JWT.sign({ //
                         phone_number: phone_number,
-                        user_id: buyer._id
+                        user_id: buyer._id,
+                        isDealer: true
                     }, JWT_SECRET);
                     res.status(200).json({
                         token: token,

@@ -9,7 +9,7 @@ class ReviewsController {
             const {organizationId} = req.query;
             const {date, rating, comment} = req.body;
             const data = {};
-            const client = await Clients.findOne({
+            const client = await Dealers.findOne({
                 _id: user_id
             });
             if (isDealer === true) {
@@ -27,7 +27,7 @@ class ReviewsController {
             const newReviews = new Reviews({
                 organisation_id: organizationId,
                 rating: rating,
-                text: comment,
+                comment: comment,
                 date: date,
                 fullName: fullName
             })

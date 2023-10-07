@@ -13,23 +13,24 @@ import subscribe from "./subscribe";
 import admin from "./admin";
 
 import authorization from "../middlewares/validation";
+import subscription from "../middlewares/subscription";
 
 const express = require('express');
 
 const router = express.Router();
 
-router.use('/users', authorization, users);
-router.use('/cities', authorization, cities);
-router.use('/organisations', authorization, organisations);
-router.use('/services', authorization, services);
-router.use('/categories', authorization, categories);
-router.use('/banners', authorization, banners);
-router.use('/filter', authorization, filter);
-router.use('/cars', authorization, cars);
-router.use('/reviews', authorization, reviews)
-router.use('/promotion', authorization, promotion);
-router.use('/report', authorization, report)
-router.use('/subscribe', authorization, subscribe)
-router.use('/admin', authorization, admin)
+router.use('/users', authorization, subscription, users);
+router.use('/cities', authorization, subscription, cities);
+router.use('/organisations', authorization, subscription, organisations);
+router.use('/services', authorization, subscription, services);
+router.use('/categories', authorization, subscription, categories);
+router.use('/banners', authorization, subscription, banners);
+router.use('/filter', authorization, subscription, filter);
+router.use('/cars', authorization, subscription, cars);
+router.use('/reviews', authorization, subscription, reviews)
+router.use('/promotion', authorization, subscription, promotion);
+router.use('/report', authorization, subscription, report)
+router.use('/subscribe', authorization, subscription, subscribe)
+router.use('/admin', authorization, subscription, admin)
 
 export default router;

@@ -10,5 +10,6 @@ router.get('/users', AdminController.getUsers);
 router.put('/ban', AdminController.banUser);
 router.get('/organisations', AdminController.getOrganisations);
 router.get('/services', AdminController.getCategories);
+router.post('/sub', AdminController.createSub);
 
 export default router;

@@ -21,9 +21,9 @@ class FavoritesController {
     //
     static DeleteFavOrganisation = async (req, res, next) => {
         try {
-            const {favorite} = req.query;
+            const {organisation} = req.query;
             await Favorites.findOneAndDelete({
-                _id: favorite
+                organisation_id: organisation
             })
             res.status(200).json({
                 message: 'success'

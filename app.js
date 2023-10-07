@@ -2,6 +2,7 @@ import bodyParser from "express";
 import databaseConnections from "./services/database";
 import headersValidation from "./middlewares/headers";
 import router from "./routes";
+import subscription from "./middlewares/subscription";
 
 const createError = require('http-errors');
 const express = require('express');
@@ -12,6 +13,7 @@ databaseConnections.connectToDatabase();
 const app = express();
 app.use(headersValidation);
 app.use(logger('dev'));
+app.use(subscription)
 app.use(express.json())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));

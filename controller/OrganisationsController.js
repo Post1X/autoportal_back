@@ -21,11 +21,7 @@ class OrganisationsController {
                 logo,
                 photos
             } = req.body;
-            console.log(employeers, 'employeers')
-            console.log(schedule, 'schedule')
             const {user_id} = req;
-            const photoArray = [];
-            let finalLogo;
             const newOrganisation = new Organisations({
                 dealer_id: user_id,
                 name: name,
@@ -44,7 +40,7 @@ class OrganisationsController {
             })
             await newOrganisation.save();
             res.status(200).json({
-                message: 'success'
+                organizationId: newOrganisation._id
             })
         } catch (e) {
             e.status = 401;

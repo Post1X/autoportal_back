@@ -128,19 +128,24 @@ class AdminController {
     //
     static createSub = async (req, res, next) => {
         try {
-            const {amount, duration} = req.body;
+            const {month_amount, year_amount, free_period} = req.body;
             const sub = await Subscription.find();
-            if (!sub) {
+            var percentage = Math.round(((Number(month_amount) - Number(year_amount)) / Number(year_amount)) * 100)
+            if (sub.length === 0) {
                 const newSub = new Subscription({
-                    amount: amount,
-                    free_period: duration
+                    month_amount: month_amount,
+                    year_amount: year_amount,
+                    free_period: free_period,
+                    percentage: percentage
                 });
                 await newSub.save();
             }
             if (sub) {
                 await Subscription.updateMany({
-                    amount: amount,
-                    free_period: duration
+                    month_amount: month_amount,
+                    year_amount: year_amount,
+                    free_period: free_period,
+                    percentage: percentage
                 })
             }
             res.status(200).json({
