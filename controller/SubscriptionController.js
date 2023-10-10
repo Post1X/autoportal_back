@@ -29,6 +29,27 @@ class SubscriptionController {
         }
     }
     //
+    static isReleased = async (req, res, next) => {
+        try {
+            res.status(200).json({
+                isSubscribe: false
+            })
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static getInfo = async (req, res, next) => {
+        try {
+            const info = await Subscription.findOne();
+            res.status(200).json(info)
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
     static getSubMonth = async (req, res, next) => {
         try {
             const {organizationId} = req.query;
