@@ -2,6 +2,7 @@ import Payments from "../schemas/PaymentsSchema";
 import PaymentMethods from "../schemas/PaymentMethodsSchema";
 import Subscription from "../schemas/SubscriptionSchema";
 import Organisations from "../schemas/OrganisationsSchema";
+import CheckPayment from "../utilities/CheckPayment";
 
 class SubscriptionController {
     static checkSub = async (req, res, next) => {
@@ -193,15 +194,15 @@ class SubscriptionController {
     //
     static getSubYear = async (req, res, next) => {
         try {
+            const {organizationId} = req.query;
             const organisation = await Organisations.findOne({
                 _id: organizationId
             })
             const {user_id} = req;
-            const {organizationId} = req.query;
             const url = 'https://api.yookassa.ru/v3/payments';
-            const payment_method_id = await PaymentMethods.findOne({
-                user_id: user_id
-            })
+            // const payment_method_id = await PaymentMethods.findOne({
+            //     user_id: user_id
+            // })
             const subDetails = await Subscription.findOne();
             if (organisation.subscription_status === true) {
                 res.status(301).json({
@@ -218,8 +219,6 @@ class SubscriptionController {
                     }
                     return randomString;
                 }
-
-                if (payment_method_id) {
                     const authHeader = 'Basic ' + Buffer.from('244369:test_7NnPZ1y9-SJDn_kaPGbXe1He3EmNJP-RyUvKD_47y7w').toString('base64');
                     const idempotenceKey = generateRandomString(7);
                     const requestData = {
@@ -229,7 +228,10 @@ class SubscriptionController {
                         },
                         capture: true,
                         description: organizationId,
-                        payment_method_id: payment_method_id.payment_method_id
+                        confirmation: {
+                            type: 'redirect',
+                            return_url: 'http://localhost:3001/orders/sas'
+                        },
                     };
                     fetch(url, {
                         method: 'POST',
@@ -257,8 +259,13 @@ class SubscriptionController {
                                         forSub: false,
                                         forYear: false
                                     });
+                                    await Organisations.findOneAndUpdate({
+                                        _id: organizationId
+                                    }, {
+                                        status: 'waiting for capture'
+                                    })
                                     res.status(200).json({
-                                        message: 'success'
+                                        data: data.confirmation.confirmation_url
                                     })
                                 } else {
                                     res.status(400).json({
@@ -272,64 +279,6 @@ class SubscriptionController {
                         .catch(error => {
                             console.error('Error:', error);
                         });
-                }
-                if (!payment_method_id) {
-                    const authHeader = 'Basic ' + Buffer.from('244369:test_7NnPZ1y9-SJDn_kaPGbXe1He3EmNJP-RyUvKD_47y7w').toString('base64');
-                    const idempotenceKey = generateRandomString(7);
-                    const requestData = {
-                        amount: {
-                            value: subDetails.year_amount,
-                            currency: 'RUB'
-                        },
-                        capture: true,
-                        confirmation: {
-                            type: 'redirect',
-                            return_url: 'http://localhost:3001/orders/'
-                        },
-                        description: organizationId,
-                        save_payment_method: true
-                    };
-                    fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': authHeader,
-                            'Idempotence-Key': idempotenceKey,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestData)
-                    })
-                        .then(response => response.json())
-                        .then(async data => {
-                            const newPayment = new Payments({
-                                seller_id: user_id,
-                                order_id: data.id,
-                                forSub: true,
-                                forYear: true,
-                                organizationId: organizationId
-                            });
-                            const newPaymentMethod = new PaymentMethods({
-                                payment_method_id: data.id,
-                                user_id: user_id
-                            })
-                            try {
-                                await newPaymentMethod.save();
-                                await newPayment.save();
-                                const filter = {_id: newPayment.id};
-                                await Payments.updateMany({_id: {$ne: filter}}, {
-                                    forSub: false
-                                });
-                                res.status(200).json({
-                                    data: data.confirmation.confirmation_url,
-                                });
-                            } catch (error) {
-                                console.error('Error saving payment:', error);
-                                res.status(500).json({error: 'Failed to save payment data'});
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-                }
             }
         } catch (e) {
             e.status = 401;
@@ -344,6 +293,43 @@ class SubscriptionController {
                 gay: 'gay'
             })
         } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static getInfo = async (req, res, next) => {
+        try {
+            const subdetails = await Subscription.findOne({});
+            res.status(200).json({
+                subdetails
+            })
+        }catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static checkSubForOrg = async (req, res, next) => {
+        try {
+            const {organizationId} = req.query;
+            const order_id = Payments.findOne({
+                organizationId: organizationId
+            })
+            const paymentStatus = await CheckPayment(order_id.order_id);
+            if (paymentStatus === 'succeeded')
+            {
+              await Organisations.findOneAndUpdate({
+                  _id: organizationId
+              }, {
+                  status: 'active'
+              });
+            }else{
+                res.status(300).json({
+                    message: 'Подписка еще не куплена'
+                })
+            }
+        }catch (e) {
             e.status = 401;
             next(e);
         }

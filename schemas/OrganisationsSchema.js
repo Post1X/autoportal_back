@@ -78,6 +78,9 @@ const OrganisationsSchema = new Schema({
     period_updated: {
         type: Schema.Types.Boolean,
         default: false
+    },
+    status: {
+        type: Schema.Types.String
     }
 
 })

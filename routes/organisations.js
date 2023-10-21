@@ -1,6 +1,7 @@
 import OrganisationsController from "../controller/OrganisationsController";
 import upload from "../utilities/multer";
 import FavoritesController from "../controller/FavoritesController";
+import SubscriptionController from "../controller/SubscriptionController";
 
 const express = require('express');
 const uploadFields = upload.any();
@@ -17,6 +18,7 @@ router.get('/favorites', FavoritesController.GetOrganisations);
 router.post('/favorites', FavoritesController.AddOrganisationToFav);
 router.delete('/favorites', FavoritesController.DeleteFavOrganisation);
 router.get('/my/created', OrganisationsController.isCreated)
+router.post('/sub-check', SubscriptionController.checkSubForOrg);
 
 
 export default router;
