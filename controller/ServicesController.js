@@ -61,6 +61,21 @@ class ServicesController {
             next(e);
         }
     }
+    //
+    static getExtServices = async (req, res, next) => {
+        try {
+            const {serviceId} = req.query;
+            const extservice = await Services.find({
+                service_id: serviceId
+            })
+            res.status(200).json({
+                extservice
+            })
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
 }
 
 export default ServicesController;

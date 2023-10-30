@@ -8,5 +8,5 @@ const uploadFields = upload.any();
 import BannersController from "../controller/BannersController";
 
 router.get('/', BannersController.GetBanners);
-router.post('/', uploadFields, BannersController.CreateBanner);
+router.post('/', BannersController.CreateBanner);
 export default router;

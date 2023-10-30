@@ -9,6 +9,7 @@ router.post('/login', AdminController.AdminLogin);
 router.get('/users', AdminController.getUsers);
 router.put('/ban', AdminController.banUser);
 router.get('/organisations', AdminController.getOrganisations);
+router.post('/organisations/users', AdminController.getUsersOrg);
 router.get('/services', AdminController.getCategories);
 router.post('/sub', AdminController.createSub);
 

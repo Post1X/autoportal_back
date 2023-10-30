@@ -173,14 +173,15 @@ class OrganisationsController {
                 filter.city = city;
             }
             if (categoryId) {
-                filter.category_id = categoryId;
+                filter.categoryId = categoryId;
             }
             if (servicesId) {
-                filter.service_id = servicesId
+                filter.typeServices = servicesId
             }
             if (brandsCarsId) {
-                filter.model_names = brandsCarsId;
+                filter.brandsCars = brandsCarsId;
             }
+            console.log(categoryId);
             const days_ids = [];
             const query = await Organisations.find(filter);
             const final_array = [];

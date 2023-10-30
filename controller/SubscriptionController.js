@@ -286,18 +286,6 @@ class SubscriptionController {
         }
     }
     //
-    static checkPayment = async (req, res, next) => {
-        try {
-            // const payment = await CheckPayment('2cab6c5c-000f-5000-9000-1097a297a9a1');
-            res.status(200).json({
-                gay: 'gay'
-            })
-        } catch (e) {
-            e.status = 401;
-            next(e);
-        }
-    }
-    //
     static getInfo = async (req, res, next) => {
         try {
             const subdetails = await Subscription.findOne({});
@@ -329,6 +317,22 @@ class SubscriptionController {
                     message: 'Подписка еще не куплена'
                 })
             }
+        }catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    static  changeStatus = async (req, res, next) => {
+        try {
+            const {organizationId} = req.query;
+            await Organisations.findOneAndUpdate({
+                _id: organizationId
+            }, {
+                subscription_status: true
+            });
+            res.status(200).json({
+                message: 'success'
+            })
         }catch (e) {
             e.status = 401;
             next(e);

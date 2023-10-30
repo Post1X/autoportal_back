@@ -156,6 +156,19 @@ class AdminController {
             next(e);
         }
     }
+    //
+    static getUsersOrg = async (req, res, next) => {
+        try {
+            const {dealerId} = req.query;
+            const organisations = await Organisations.find({
+                dealer_id: dealerId
+            });
+            res.status(200).json(organisations);
+        }catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
 }
 
 export default AdminController;
