@@ -7,21 +7,15 @@ const PaymentsSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Sellers'
     },
-    order_id: {
-        type: Schema.Types.String
-    },
-    forSub: {
-        type: Schema.Types.Boolean
-    },
-    forMonth: {
-        type: Schema.Types.Boolean
-    },
-    forYear: {
-        type: Schema.Types.Boolean
-    },
     organizationId: {
         type: Schema.Types.ObjectId,
         ref: 'Organisations'
+    },
+    payment_method_id: {
+        type: Schema.Types.String
+    },
+    type: {
+        type: Schema.Types.String
     }
 })
 

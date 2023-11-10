@@ -9,4 +9,6 @@ import BannersController from "../controller/BannersController";
 
 router.get('/', BannersController.GetBanners);
 router.post('/', BannersController.CreateBanner);
+router.put('/', BannersController.updateBanner);
+router.delete('/', BannersController.deleteBanner);
 export default router;

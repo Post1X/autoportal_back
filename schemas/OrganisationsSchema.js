@@ -61,7 +61,8 @@ const OrganisationsSchema = new Schema({
         default: 0
     },
     is_banned: {
-        type: Schema.Types.Boolean
+        type: Schema.Types.Boolean,
+        default: false
     },
     subscription_status: {
         type: Schema.Types.Boolean,
@@ -70,6 +71,10 @@ const OrganisationsSchema = new Schema({
     subscription_until: {
         type: Schema.Types.Date,
         default: null
+    },
+    is_active: {
+        type: Schema.Types.Boolean,
+        default: false
     },
     free_period: {
         type: Schema.Types.Boolean,

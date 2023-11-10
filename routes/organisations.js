@@ -11,6 +11,7 @@ const router = express.Router();
 router.post('/my', uploadFields, OrganisationsController.CreateOrganisation);
 router.get('/my', uploadFields, OrganisationsController.GetOrganisation);
 router.post('/', OrganisationsController.FilterOrganisation);
+router.put('/', OrganisationsController.UpdateOrganisation);
 router.post('/photo', uploadFields, OrganisationsController.uploadImage);
 router.delete('/photo', OrganisationsController.deletePhotos)
 router.get('/', OrganisationsController.GetSingleOrganisation);

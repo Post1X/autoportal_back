@@ -33,8 +33,9 @@ class AdminController {
     //
     static getUsers = async (req, res, next) => {
         try {
-            const {name, isBanned, city, phone} = req.query;
+            const { name, isBanned, city, phone } = req.query;
             const filter = {};
+
             if (name) {
                 filter.full_name = name;
             }
@@ -47,20 +48,18 @@ class AdminController {
             if (phone) {
                 filter.phone_number = phone;
             }
+
             const usersArray = await Dealers.find(filter);
-            const array = [];
             const finalArray = await Promise.all(usersArray.map(async (dealer) => {
-                const organisations = await Organisations.find({});
-                const userOrganisations = organisations.filter((org) => org.dealer_id.toString() === dealer._id.toString());
-                if (userOrganisations.length > 0) {
-                    array.push(userOrganisations);
-                }
+                const organisations = await Organisations.find({ dealer_id: dealer._id });
+                const userOrganisations = organisations.filter(org => org.dealer_id.toString() === dealer._id.toString());
                 return {
                     dealer: dealer,
                     organisation_count: userOrganisations.length
                 };
             }));
-            res.status(200).json(finalArray)
+
+            res.status(200).json(finalArray);
         } catch (e) {
             e.status = 401;
             next(e);

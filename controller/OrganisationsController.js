@@ -2,6 +2,9 @@ import Organisations from "../schemas/OrganisationsSchema";
 import moment from "moment-timezone";
 import Reviews from "../schemas/ReviewsSchema";
 import Images from "../schemas/ImageSchema";
+import Favorites from "../schemas/FavoritesSchema";
+import Promotion from "../routes/promotion";
+import Promotions from "../schemas/PromotionsSchema";
 
 class OrganisationsController {
     static CreateOrganisation = async (req, res, next) => {
@@ -57,7 +60,33 @@ class OrganisationsController {
                 .populate('categoryId')
                 .populate('typeServices')
                 .populate('brandsCars')
-            res.status(200).json(organisations);
+            let arr = [];
+            await Promise.all(organisations.map(async (item) => {
+                const favcount = await Favorites.count({
+                    _id: item._id
+                });
+                const promo = await Promotions.findOne({
+                    organizationId: item._id
+                });
+                 arr.push({
+                    _id: item._id,
+                    logo: item.logo,
+                    name: item.name,
+                    address: item.address,
+                    categoryName: item.categoryId,
+                    rating: item.rating,
+                    isSubscribe: item.subscription_status,
+                    isActive: item.is_active,
+                    countFavorites: favcount,
+                    isBaned: item.is_banned,
+                     promo: promo ? {
+                         description: promo.description,
+                         startPromo: promo.startPromo,
+                         endPromo: promo.endPromo
+                     } : null
+                });
+            }))
+            res.status(200).json(arr);
         } catch (e) {
             e.status = 401;
             next(e);
@@ -83,8 +112,6 @@ class OrganisationsController {
             } = req.body;
             const {user_id} = req;
             const {organisation_id} = req.query;
-            const photoArray = [];
-            let finalLogo;
             await Organisations.findOneAndUpdate({
                 _id: organisation_id
             }, {
@@ -95,8 +122,6 @@ class OrganisationsController {
                 brandsCars: brandsCars,
                 city: city,
                 address: address,
-                // lon: lon,
-                // lat: lat,
                 mainPhone: mainPhone,
                 whatsApp: whatsApp,
                 employeers: employeers,
@@ -132,6 +157,7 @@ class OrganisationsController {
     static GetSingleOrganisation = async (req, res, next) => {
         try {
             const {id} = req.query;
+            const {user_id} = req;
             const reviews = await Reviews.find({
                 organisation_id: id
             });
@@ -141,17 +167,46 @@ class OrganisationsController {
             const sum = final_rating.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
             const rating = Math.round(sum / final_rating.length);
 
-            const organisation = await Organisations.findOne({
+            const organisation = await Organisations.find({
                 _id: id
             })
                 .populate('dealer_id')
                 .populate('categoryId')
                 .populate('typeServices')
                 .populate('brandsCars')
-            res.status(200).json({
-                organisation,
-                rating: rating
-            });
+            let arr = [];
+            await Promise.all(organisation.map(async (item) => {
+                const favcount = await Favorites.count({
+                    _id: item._id
+                });
+                const is_fav = await Favorites.find({
+                    organisation_id: item._id,
+                    client_id: user_id
+                })
+                const promo = await Promotions.findOne({
+                    organizationId: item._id
+                });
+                console.log(is_fav)
+                arr.push({
+                    _id: item._id,
+                    logo: item.logo,
+                    name: item.name,
+                    address: item.address,
+                    categoryName: item.categoryId,
+                    rating: item.rating,
+                    isSubscribe: item.subscription_status,
+                    isActive: item.is_active,
+                    countFavorites: favcount,
+                    isBaned: item.is_banned,
+                    promo: promo ? {
+                        description: promo.description,
+                        startPromo: promo.startPromo,
+                        endPromo: promo.endPromo
+                    } : null,
+                    isFavorite: is_fav.length !== 0
+                });
+            }))
+            res.status(200).json(arr);
         } catch (e) {
             e.status = 401;
             next(e);

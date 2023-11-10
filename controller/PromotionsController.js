@@ -44,19 +44,43 @@ class PromotionsController {
     //
     static GetPromotions = async (req, res, next) => {
         try {
-            const {organisation_id} = req.query;
-            const promotions = await Promotions.find({
-                organisation_id: organisation_id
-            });
-
-            res.status(200).json({
-                promotions
-            });
+            const {city, categoryId} = req.query;
+            let filter = {};
+            if (city)
+                filter.city = city;
+            if (categoryId)
+                filter.category_id = categoryId;
+            const promotion = await Promotions.find(filter);
+            const arr = [];
+            await Promise.all(promotion.map(async (item) => {
+                const organisation = await Organisations.findOne({
+                    _id: item.organizationId
+                }).populate('categoryId')
+                arr.push({
+                    promotion: {
+                        description: item.description,
+                        startPromo: item.startPromo,
+                        endPromo: item.endPromo
+                    },
+                    organization: {
+                        _id: organisation._id,
+                        logo: organisation.logo,
+                        name: organisation.name,
+                        address: organisation.address,
+                        categoryName: organisation.categoryId,
+                        rating: organisation.rating,
+                        countReviews: 0
+                    }
+                })
+            }))
+            res.status(200).json(arr);
         } catch (e) {
             e.status = 401;
             next(e);
         }
     }
+
+
     //
     static updatePromotions = async (req, res, next) => {
         try {

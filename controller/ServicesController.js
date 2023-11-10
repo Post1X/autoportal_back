@@ -33,10 +33,11 @@ class ServicesController {
     //
     static GetServices = async (req, res, next) => {
         try {
-            const {query} = req.query;
+            const {query, category_id} = req.query;
             const newRegExp = new RegExp(query, 'i');
             const services = await Services.find({
-                title: newRegExp
+                title: newRegExp,
+                category_id: category_id
             }).populate('category_id')
             res.status(200).json(
                 services
@@ -57,6 +58,24 @@ class ServicesController {
                 message: 'success'
             })
         } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    static updateService = async (req, res, next) => {
+        try {
+            const {serviceId} = req.query;
+            const {title} = req.body;
+            await Services.updateOne({
+                _id: serviceId
+            },
+                {
+                    title: title
+                });
+            res.status(200).json({
+                message: 'success'
+            })
+        }catch (e) {
             e.status = 401;
             next(e);
         }
