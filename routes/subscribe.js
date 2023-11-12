@@ -11,7 +11,8 @@ router.post('/month', SubscriptionController.getSubMonth);
 router.post('/year', SubscriptionController.getSubYear);
 // router.get('/check', SubscriptionController.checkPayment)
 router.post('/approve', SubscriptionController.changeStatus);
-router.get('/deactivate')
+router.post('/deactivate', SubscriptionController.deactivateSubscription);
+router.post('/activate', SubscriptionController.activateSubscription);
 
 
 export default router;

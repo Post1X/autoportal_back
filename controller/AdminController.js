@@ -11,7 +11,7 @@ class AdminController {
             const {phone_number, password} = req.body;
             const phoneNumber = process.env.ADMIN_NUMBER;
             const passwordEnv = process.env.ADMIN_PASSWORD;
-            if (phone_number === phone_number || password === password) {
+            if (phone_number === phone_number && password === passwordEnv) {
                 const token = jwt.sign({
                     isAdmin: true,
                     phone_number: phoneNumber,
@@ -22,7 +22,7 @@ class AdminController {
                 })
             } else {
                 res.status(300).json({
-                    error: 'Ты не пройдёшь!'
+                    message: 'error'
                 })
             }
         } catch (e) {
@@ -33,25 +33,32 @@ class AdminController {
     //
     static getUsers = async (req, res, next) => {
         try {
-            const { name, isBanned, city, phone } = req.query;
+            const {name, isBanned, city, phone, dealerId} = req.query;
             const filter = {};
 
-            if (name) {
+            if (name)
                 filter.full_name = name;
-            }
-            if (isBanned) {
+            if (isBanned)
                 filter.is_banned = isBanned;
-            }
-            if (city) {
+            if (city)
                 filter.city = city;
-            }
-            if (phone) {
+            if (phone)
                 filter.phone_number = phone;
+            if (dealerId) {
+                filter.dealer_id = dealerId;
+                filter.city = city;
+                const user = await Dealers.findOne({
+                    _id: dealerId
+                });
+                const organisations = await Organisations.count({dealer_id: user._id});
+                res.status(200).json([{
+                    dealer: user,
+                    organisation_count: organisations
+                }])
             }
-
             const usersArray = await Dealers.find(filter);
             const finalArray = await Promise.all(usersArray.map(async (dealer) => {
-                const organisations = await Organisations.find({ dealer_id: dealer._id });
+                const organisations = await Organisations.find({dealer_id: dealer._id});
                 const userOrganisations = organisations.filter(org => org.dealer_id.toString() === dealer._id.toString());
                 return {
                     dealer: dealer,
@@ -73,6 +80,8 @@ class AdminController {
                 _id: dealerId
             })
             await Dealers.findOneAndUpdate({
+                _id: dealerId
+            }, {
                 is_banned: !dealer.is_banned
             });
             res.status(200).json({
@@ -129,13 +138,13 @@ class AdminController {
         try {
             const {month_amount, year_amount, free_period} = req.body;
             const sub = await Subscription.find();
-            var percentage = Math.round(((Number(month_amount) - Number(year_amount)) / Number(year_amount)) * 100)
+            const percentage = Math.round(((year_amount - month_amount * 12) / (month_amount * 12)) * 100);
             if (sub.length === 0) {
                 const newSub = new Subscription({
                     month_amount: month_amount,
                     year_amount: year_amount,
                     free_period: free_period,
-                    percentage: percentage
+                    percentage: -(percentage)
                 });
                 await newSub.save();
             }
@@ -144,7 +153,7 @@ class AdminController {
                     month_amount: month_amount,
                     year_amount: year_amount,
                     free_period: free_period,
-                    percentage: percentage
+                    percentage: -(percentage)
                 })
             }
             res.status(200).json({
@@ -163,6 +172,18 @@ class AdminController {
                 dealer_id: dealerId
             });
             res.status(200).json(organisations);
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static getContacts = async (req, res, next) => {
+        try {
+            res.status(200).json({
+                orderBanner: process.env.ORDERBANNER,
+                report: process.env.REPORT
+            })
         }catch (e) {
             e.status = 401;
             next(e);

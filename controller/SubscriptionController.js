@@ -106,9 +106,15 @@ class SubscriptionController {
                         try {
                             if (!data.error) {
                                 console.log(data);
+                                await PaymentMethods.updateMany({
+                                    user_id: user_id
+                                }, {
+                                    isNew: false
+                                })
                                 const newPaymentMethod = new PaymentMethods({
                                    user_id: user_id,
-                                   payment_method_id: data.id
+                                   payment_method_id: data.id,
+                                    isNew: true
                                 })
                                 await newPaymentMethod.save();
                                 res.status(200).json({
@@ -246,21 +252,25 @@ class SubscriptionController {
             const {organizationId, type} = req.query;
             const {user_id} = req;
             const payment = await PaymentMethods.findOne({
-                user_id: user_id
+                user_id: user_id,
+                isNew: true
             });
-            await Payments.deleteMany({
+            if (payment)
+            {
+            await Payments.updateMany({
                 seller_id: user_id,
-                organizationId: organizationId
+                isNew: false
             })
             const newPayment = new Payments({
                 seller_id: user_id,
                 organizationId: organizationId,
                 payment_method_id: payment.payment_method_id,
-                type: type
+                type: type,
+                isNew: true
             })
             const currentDate = new Date();
             const futureDate = new Date(currentDate);
-            if (type === 'month')
+            // if (type === 'month')
                 futureDate.setMonth(currentDate.getMonth() + 1);
             if (type === 'year')
                 futureDate.setMonth(currentDate.getMonth() + 12);
@@ -276,6 +286,7 @@ class SubscriptionController {
             res.status(200).json({
                 message: 'success'
             })
+            }
         }catch (e) {
             e.status = 401;
             next(e);
@@ -301,9 +312,39 @@ class SubscriptionController {
                 seller_id: user_id,
                 organizationId: organizationId
             })
+            res.status(200).json({
+                message: 'success'
+            })
         }
         catch (e)
         {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static activateSubscription = async (req, res, next) => {
+        try {
+            const {organizationId} = req.query;
+            const organisation = await Organisations.findOne({
+                _id: organizationId
+            });
+            const currentDate = new Date();
+            const futureDate = new Date(currentDate);
+            const isoDate = futureDate.toISOString();
+            if (isoDate >= organisation.subscription_until)
+                res.status(301).json({
+                    error: 'Купите подписку'
+                })
+            await Organisations.updateOne({
+                _id: organizationId
+            }, {
+                is_active: true
+            })
+            res.status(200).json({
+                message: 'success'
+            })
+        }catch (e) {
             e.status = 401;
             next(e);
         }

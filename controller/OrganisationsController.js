@@ -164,49 +164,57 @@ class OrganisationsController {
             const final_rating = reviews.map((item) => {
                 return Number(item.rating);
             });
+            let organisation = {};
             const sum = final_rating.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
             const rating = Math.round(sum / final_rating.length);
-
-            const organisation = await Organisations.find({
+            const countreviews = await Reviews.count({
+                organisation_id: id
+            });
+            const isFav = await Favorites.findOne({
+                client_id: user_id,
+                organisation_id: id
+            })
+            const promo = await Promotions.findOne({
+                organizationId: id
+            });
+            const lastReview = await Reviews.findOne({
+                organisation_id: id
+            }).sort({ createdAt: 1 });
+            const orgdto = await Organisations.findOne({
                 _id: id
             })
                 .populate('dealer_id')
                 .populate('categoryId')
                 .populate('typeServices')
-                .populate('brandsCars')
-            let arr = [];
-            await Promise.all(organisation.map(async (item) => {
-                const favcount = await Favorites.count({
-                    _id: item._id
-                });
-                const is_fav = await Favorites.find({
-                    organisation_id: item._id,
-                    client_id: user_id
-                })
-                const promo = await Promotions.findOne({
-                    organizationId: item._id
-                });
-                console.log(is_fav)
-                arr.push({
-                    _id: item._id,
-                    logo: item.logo,
-                    name: item.name,
-                    address: item.address,
-                    categoryName: item.categoryId,
-                    rating: item.rating,
-                    isSubscribe: item.subscription_status,
-                    isActive: item.is_active,
-                    countFavorites: favcount,
-                    isBaned: item.is_banned,
-                    promo: promo ? {
-                        description: promo.description,
-                        startPromo: promo.startPromo,
-                        endPromo: promo.endPromo
-                    } : null,
-                    isFavorite: is_fav.length !== 0
-                });
-            }))
-            res.status(200).json(arr);
+                .populate('brandsCars');
+            organisation._id = orgdto._id;
+            organisation.logo = orgdto.logo;
+            organisation.name = orgdto.name;
+            organisation.address = orgdto.address;
+            organisation.categoryId = orgdto.categoryId;
+            organisation.rating = rating;
+            organisation.countReviews = countreviews;
+            organisation.isFavorite = !!isFav;
+            organisation.description = orgdto.description;
+            organisation.city = orgdto.city;
+            organisation.photos = orgdto.photos;
+            organisation.promo = promo ? {
+                description: promo.description,
+                startPromo: promo.startPromo,
+                endPromo: promo.endPromo
+            } : null;
+            organisation.mainPhone = orgdto.mainPhone;
+            organisation.whatsApp = orgdto.whatsApp;
+            organisation.employeers = orgdto.employeers;
+            organisation.services = orgdto.typeServices;
+            organisation.brandsCars = orgdto.brandsCars;
+            organisation.schedule = orgdto.schedule;
+            organisation.lastReview = lastReview;
+            organisation.dealerId = orgdto.dealer_id._id;
+            organisation.dealerCity = orgdto.dealer_id.city;
+            res.status(200).json({
+                organisation
+            });
         } catch (e) {
             e.status = 401;
             next(e);
@@ -228,13 +236,13 @@ class OrganisationsController {
                 filter.city = city;
             }
             if (categoryId) {
-                filter.categoryId = categoryId;
+                filter.categoryId = { $in: categoryId}
             }
             if (servicesId) {
-                filter.typeServices = servicesId
+                filter.typeServices = { $in: servicesId}
             }
             if (brandsCarsId) {
-                filter.brandsCars = brandsCarsId;
+                filter.brandsCars = { $in: brandsCarsId };
             }
             console.log(categoryId);
             const days_ids = [];
@@ -322,6 +330,9 @@ class OrganisationsController {
                     }
                 }));
                 const modifiedOrganisations = await Promise.all(final_array.map(async (item) => {
+                    const countreviews = await Reviews.count({
+                        organisation_id: item._id
+                    });
                     const reviews = await Reviews.find({
                         organisation_id: item._id
                     });
@@ -332,7 +343,8 @@ class OrganisationsController {
                     const rating = Math.round(sum / final_rating.length);
                     return {
                         ...item[0].toObject(),
-                        rating: rating
+                        rating: rating,
+                        countReviews: countreviews
                     };
                 }));
                 res.status(200).json(modifiedOrganisations);
@@ -348,6 +360,9 @@ class OrganisationsController {
                     const reviews = await Reviews.find({
                         organisation_id: item._id
                     });
+                    const countreviews = await Reviews.count({
+                        organisation_id: item._id
+                    });
                     const final_rating = reviews.map((item) => {
                         return Number(item.rating);
                     });
@@ -355,12 +370,12 @@ class OrganisationsController {
                     const rating = Math.round(sum / final_rating.length);
                     return {
                         ...item.toObject(),
-                        rating: rating
+                        rating: rating,
+                        countReviews: countreviews
                     };
                 }));
                 res.status(200).json(modifiedOrganisations);
             }
-
             if (final_array.length === 0) {
                 res.status(300).json({
                     error: 'Список организаций пуст.'

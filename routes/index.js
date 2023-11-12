@@ -11,6 +11,7 @@ import report from "./report";
 import reviews from "./reviews";
 import subscribe from "./subscribe";
 import admin from "./admin";
+import contacts from "./contacts";
 
 import sub from "../middlewares/sub";
 import authorization from "../middlewares/validation";
@@ -27,10 +28,11 @@ router.use('/categories', authorization,  sub, categories);
 router.use('/banners', authorization,  sub, banners);
 router.use('/filter', authorization,  sub, filter);
 router.use('/cars', authorization,  sub, cars);
-router.use('/reviews', authorization,  sub, reviews)
+router.use('/reviews', authorization,  sub, reviews);
 router.use('/promotion', authorization,  sub, promotion);
-router.use('/report', authorization,  sub, report)
-router.use('/subscribe', authorization,  sub, subscribe)
-router.use('/admin', authorization,  sub, admin)
+router.use('/report', authorization,  sub, report);
+router.use('/subscribe', authorization,  sub, subscribe);
+router.use('/admin', authorization,  sub, admin);
+router.use('/contacts', authorization, sub, contacts);
 
 export default router;

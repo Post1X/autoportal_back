@@ -16,6 +16,9 @@ const PaymentsSchema = new Schema({
     },
     type: {
         type: Schema.Types.String
+    },
+    isNew: {
+        type: Schema.Types.Boolean
     }
 })
 

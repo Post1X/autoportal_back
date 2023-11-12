@@ -45,6 +45,7 @@ class FavoritesController {
                 res.status(200).json(favList)
             }
             if (categoryId) {
+                console.log('hi');
                 const filteredList = favList.filter(item => item.organisation_id.category_id === categoryId);
                 res.status(200).json({
                     filteredList

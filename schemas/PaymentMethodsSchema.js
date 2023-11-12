@@ -9,6 +9,9 @@ const PaymentMethodsSchema = new Schema({
     user_id: {
         type: Schema.Types.ObjectId,
         ref: 'Dealers'
+    },
+    isNew: {
+        type: Schema.Types.Boolean
     }
 })
 
