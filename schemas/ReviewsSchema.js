@@ -18,6 +18,9 @@ const ReviewsSchema = new Schema({
     },
     fullName: {
         type: Schema.Types.String
+    },
+    user_id: {
+        type: Schema.Types.ObjectId
     }
 })
 

@@ -3,7 +3,6 @@ import moment from "moment-timezone";
 import Reviews from "../schemas/ReviewsSchema";
 import Images from "../schemas/ImageSchema";
 import Favorites from "../schemas/FavoritesSchema";
-import Promotion from "../routes/promotion";
 import Promotions from "../schemas/PromotionsSchema";
 
 class OrganisationsController {
@@ -68,7 +67,7 @@ class OrganisationsController {
                 const promo = await Promotions.findOne({
                     organizationId: item._id
                 });
-                 arr.push({
+                arr.push({
                     _id: item._id,
                     logo: item.logo,
                     name: item.name,
@@ -79,11 +78,11 @@ class OrganisationsController {
                     isActive: item.is_active,
                     countFavorites: favcount,
                     isBaned: item.is_banned,
-                     promo: promo ? {
-                         description: promo.description,
-                         startPromo: promo.startPromo,
-                         endPromo: promo.endPromo
-                     } : null
+                    promo: promo ? {
+                        description: promo.description,
+                        startPromo: promo.startPromo,
+                        endPromo: promo.endPromo
+                    } : null
                 });
             }))
             res.status(200).json(arr);
@@ -179,7 +178,7 @@ class OrganisationsController {
             });
             const lastReview = await Reviews.findOne({
                 organisation_id: id
-            }).sort({ createdAt: 1 });
+            }).sort({createdAt: 1});
             const orgdto = await Organisations.findOne({
                 _id: id
             })
@@ -232,21 +231,29 @@ class OrganisationsController {
             const todayDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)
             const {scheduleFilter, city, categoryId, servicesId, brandsCarsId, sortType, id} = req.body;
             const filter = {};
+            let sort;
+            console.log(brandsCarsId);
             if (city) {
                 filter.city = city;
             }
             if (categoryId) {
-                filter.categoryId = { $in: categoryId}
+                filter.categoryId = {$in: categoryId}
             }
             if (servicesId) {
-                filter.typeServices = { $in: servicesId}
+                filter.typeServices = {$in: servicesId}
             }
             if (brandsCarsId) {
-                filter.brandsCars = { $in: brandsCarsId };
+                filter.brandsCars = {$in: [brandsCarsId]};
+            }
+            if (sortType) {
+                if (sortType === "ratingASC")
+                    sort = 1;
+                if (sortType === "ratingDESC")
+                    sort = -1;
             }
             console.log(categoryId);
             const days_ids = [];
-            const query = await Organisations.find(filter);
+            const query = await Organisations.find(filter).sort({rating: sort});
             const final_array = [];
             if (scheduleFilter) {
                 for (const obj of query) {
@@ -277,7 +284,9 @@ class OrganisationsController {
                                 final_array.push(await Organisations.find({
                                     _id: item.id,
                                     filter
-                                }).populate('dealer_id')
+                                })
+                                    .sort({rating: sort})
+                                    .populate('dealer_id')
                                     .populate('categoryId')
                                     .populate('typeServices')
                                     .populate('brandsCars'));
@@ -292,7 +301,9 @@ class OrganisationsController {
                                 final_array.push(await Organisations.find({
                                     _id: item.id,
                                     filter
-                                }).populate('dealer_id')
+                                })
+                                    .sort({rating: sort})
+                                    .populate('dealer_id')
                                     .populate('categoryId')
                                     .populate('typeServices')
                                     .populate('brandsCars'));
@@ -308,7 +319,9 @@ class OrganisationsController {
                                 final_array.push(await Organisations.find({
                                     _id: item.id,
                                     filter
-                                }).populate('dealer_id')
+                                })
+                                    .sort({rating: sort})
+                                    .populate('dealer_id')
                                     .populate('categoryId')
                                     .populate('typeServices')
                                     .populate('brandsCars'));
@@ -321,7 +334,8 @@ class OrganisationsController {
                                 final_array.push(await Organisations.find({
                                     _id: item.id,
                                     filter
-                                }).populate('dealer_id')
+                                }).sort({rating: sort})
+                                    .populate('dealer_id')
                                     .populate('categoryId')
                                     .populate('typeServices')
                                     .populate('brandsCars'))
@@ -352,7 +366,8 @@ class OrganisationsController {
             if (!scheduleFilter) {
                 final_array.push(...await Organisations.find(
                     filter
-                ).populate('dealer_id')
+                ).sort({rating: sort})
+                    .populate('dealer_id')
                     .populate('categoryId')
                     .populate('typeServices')
                     .populate('brandsCars'));

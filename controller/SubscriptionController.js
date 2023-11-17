@@ -142,10 +142,14 @@ class SubscriptionController {
     static getSubYear = async (req, res, next) => {
         try {
             const {organizationId} = req.query;
+            const {user_id} = req;
             const organisation = await Organisations.findOne({
                 _id: organizationId
             })
             const url = 'https://api.yookassa.ru/v3/payments';
+            const payment_method_id = await PaymentMethods.findOne({
+                user_id: user_id
+            })
             const subDetails = await Subscription.findOne();
             if (organisation.subscription_status === true) {
                 res.status(301).json({
@@ -162,48 +166,60 @@ class SubscriptionController {
                     }
                     return randomString;
                 }
-                    const authHeader = 'Basic ' + Buffer.from('244369:test_7NnPZ1y9-SJDn_kaPGbXe1He3EmNJP-RyUvKD_47y7w').toString('base64');
-                    const idempotenceKey = generateRandomString(7);
-                    const requestData = {
-                        amount: {
-                            value: subDetails.year_amount,
-                            currency: 'RUB'
-                        },
-                        description: organizationId,
-                        confirmation: {
-                            type: 'redirect',
-                            return_url: 'http://localhost:3001/orders/sas'
-                        },
-                        save_payment_method: true
-                    };
-                    fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': authHeader,
-                            'Idempotence-Key': idempotenceKey,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestData)
-                    })
-                        .then(response => response.json())
-                        .then(async data => {
-                            try {
-                                if (!data.error) {
-                                    res.status(200).json({
-                                        data: data.confirmation.confirmation_url
-                                    })
-                                } else {
-                                    res.status(400).json({
-                                        message: 'Ошибка. Попробуйте снова.'
-                                    })
-                                }
-                            } catch (error) {
-                                console.error('Error saving payment:', error);
+                const authHeader = 'Basic ' + Buffer.from('244369:test_7NnPZ1y9-SJDn_kaPGbXe1He3EmNJP-RyUvKD_47y7w').toString('base64');
+                const idempotenceKey = generateRandomString(7);
+                const requestData = {
+                    amount: {
+                        value: subDetails.year_amount,
+                        currency: 'RUB'
+                    },
+                    description: organizationId,
+                    confirmation: {
+                        type: 'redirect',
+                        return_url: 'http://localhost:3001/orders/sas'
+                    },
+                    save_payment_method: true
+                };
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': authHeader,
+                        'Idempotence-Key': idempotenceKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                    .then(response => response.json())
+                    .then(async data => {
+                        try {
+                            if (!data.error) {
+                                console.log(data);
+                                await PaymentMethods.updateMany({
+                                    user_id: user_id
+                                }, {
+                                    isNew: false
+                                })
+                                const newPaymentMethod = new PaymentMethods({
+                                    user_id: user_id,
+                                    payment_method_id: data.id,
+                                    isNew: true
+                                })
+                                await newPaymentMethod.save();
+                                res.status(200).json({
+                                    data: data.confirmation.confirmation_url
+                                })
+                            } else {
+                                res.status(400).json({
+                                    message: 'Ошибка. Попробуйте снова.'
+                                })
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
+                        } catch (error) {
+                            console.error('Error saving payment:', error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
             }
         } catch (e) {
             e.status = 401;

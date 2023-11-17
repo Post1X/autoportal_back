@@ -10,6 +10,7 @@ const storage = multer.diskStorage({
         if (file.mimetype === 'image/jpeg') ext = '.jpg';
         else if (file.mimetype === 'image/svg+xml') ext = '.svg';
         else if (file.mimetype === 'image/png') ext = '.png';
+        else if (file.mimetype === 'application/pdf') ext = '.pdf';
         cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
     },
 })

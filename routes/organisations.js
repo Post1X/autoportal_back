@@ -2,16 +2,17 @@ import OrganisationsController from "../controller/OrganisationsController";
 import upload from "../utilities/multer";
 import FavoritesController from "../controller/FavoritesController";
 import SubscriptionController from "../controller/SubscriptionController";
+import is_banned from "../middlewares/is_banned";
 
 const express = require('express');
 const uploadFields = upload.any();
 
 const router = express.Router();
 
-router.post('/my', uploadFields, OrganisationsController.CreateOrganisation);
+router.post('/my', is_banned, uploadFields, OrganisationsController.CreateOrganisation);
 router.get('/my', uploadFields, OrganisationsController.GetOrganisation);
 router.post('/', OrganisationsController.FilterOrganisation);
-router.put('/', OrganisationsController.UpdateOrganisation);
+router.put('/', is_banned, OrganisationsController.UpdateOrganisation);
 router.post('/photo', uploadFields, OrganisationsController.uploadImage);
 router.delete('/photo', OrganisationsController.deletePhotos)
 router.get('/', OrganisationsController.GetSingleOrganisation);

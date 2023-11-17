@@ -23,13 +23,22 @@ class ReviewsController {
                     error: 'Не залогиненные пользователи не могут оставлять отзывы'
                 })
             }
+            const reviewToCheck = await Reviews.findOne({
+                organisation_id: organizationId,
+                user_id: user_id
+            });
+            if (!!reviewToCheck === true)
+                res.status(402).json({
+                    error: 'Уже был отзыв.'
+                })
             const fullName = client && client.full_name ? client.full_name : (data && data.name ? data.name : 'Гость');
             const newReviews = new Reviews({
                 organisation_id: organizationId,
                 rating: rating,
                 comment: comment,
                 date: date,
-                fullName: fullName
+                fullName: fullName,
+                user_id: user_id
             })
             await newReviews.save();
             res.status(200).json({

@@ -86,12 +86,15 @@ class PromotionsController {
         try {
             const {description, startPromo, endPromo} = req.body;
             const {organizationId} = req.query;
-            await Promotions.findByIdAndUpdate({
+            await Promotions.findOneAndUpdate({
                 organizationId: organizationId
             }, {
                 description: description,
                 startPromo: startPromo,
                 endPromo: endPromo
+            })
+            res.status(200).json({
+                message: 'success'
             })
         } catch (e) {
             e.status = 401;

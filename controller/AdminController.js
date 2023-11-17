@@ -4,14 +4,16 @@ import Organisations from "../schemas/OrganisationsSchema";
 import Categories from "../schemas/CategoriesSchema";
 import Services from "../schemas/ServicesSchema";
 import Subscription from "../schemas/SubscriptionSchema";
+import Images from "../schemas/ImageSchema";
+import Oferta from "../schemas/OfertaSchema";
 
 class AdminController {
     static AdminLogin = async (req, res, next) => {
         try {
-            const {phone_number, password} = req.body;
+            const {phone, password} = req.body;
             const phoneNumber = process.env.ADMIN_NUMBER;
             const passwordEnv = process.env.ADMIN_PASSWORD;
-            if (phone_number === phone_number && password === passwordEnv) {
+            if (phone === phoneNumber && password === passwordEnv) {
                 const token = jwt.sign({
                     isAdmin: true,
                     phone_number: phoneNumber,
@@ -84,6 +86,9 @@ class AdminController {
             }, {
                 is_banned: !dealer.is_banned
             });
+            await Organisations.deleteMany({
+                dealer_id: dealerId
+            })
             res.status(200).json({
                 message: 'success'
             })
@@ -184,7 +189,51 @@ class AdminController {
                 orderBanner: process.env.ORDERBANNER,
                 report: process.env.REPORT
             })
-        }catch (e) {
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static uploadFile = async (req, res, next) => {
+        try {
+            const offer = req.files.find(file => file.fieldname === 'offer');
+            const policy = req.files.find(file => file.fieldname === 'policy');
+            const offerPart = offer.path.split('public');
+            const policyPart = policy.path.split('public');
+            const finalOffer = `http://194.67.125.33:3001/${offerPart[1].substring(1)}`;
+            const finalPolicy = `http://194.67.125.33:3001/${policyPart[1].substring(1)}`;
+            const newImage = new Oferta({
+                offer: finalOffer,
+                policy: finalPolicy
+            });
+            await newImage.save();
+            res.status(200).json(
+                {
+                    message: 'ok'
+                }
+            )
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static getOferta = async (req, res, next) => {
+        try {
+            const file = await Oferta.findOne();
+            res.status(200).json(file.oferta);
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
+    static getPolicy = async (req, res, next) => {
+        try {
+            const file = await Oferta.findOne();
+            res.status(200).json(file.policy);
+        } catch (e) {
             e.status = 401;
             next(e);
         }
