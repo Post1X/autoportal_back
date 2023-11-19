@@ -1,6 +1,6 @@
 import Reviews from "../schemas/ReviewsSchema";
 import Dealers from "../schemas/DealersSchema";
-import Clients from "../schemas/ClientsSchema";
+import Organisations from "../schemas/OrganisationsSchema";
 
 class ReviewsController {
     static createReview = async (req, res, next) => {
@@ -27,22 +27,40 @@ class ReviewsController {
                 organisation_id: organizationId,
                 user_id: user_id
             });
-            if (!!reviewToCheck === true)
+            if (!!reviewToCheck === true) {
                 res.status(402).json({
                     error: 'Уже был отзыв.'
                 })
-            const fullName = client && client.full_name ? client.full_name : (data && data.name ? data.name : 'Гость');
-            const newReviews = new Reviews({
-                organisation_id: organizationId,
-                rating: rating,
-                comment: comment,
-                date: date,
-                fullName: fullName,
-                user_id: user_id
-            })
-            await newReviews.save();
-            res.status(200).json({
-                message: 'success'
+            } else {
+                const fullName = client && client.full_name ? client.full_name : (data && data.name ? data.name : 'Гость');
+                const newReviews = new Reviews({
+                    organisation_id: organizationId,
+                    rating: rating,
+                    comment: comment,
+                    date: date,
+                    fullName: fullName,
+                    user_id: user_id
+                })
+                await newReviews.save();
+                const reviews = await Reviews.find({
+                    organisation_id: organizationId
+                });
+                const final_rating = reviews.map((item) => {
+                    return Number(item.rating);
+                });
+                const sum = final_rating.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+                console.log(sum / reviews.length);
+                await Organisations.updateOne({
+                    _id: organizationId
+                }, {
+                    rating: Math.round(sum / reviews.length)
+                });
+                res.status(200).json({
+                    message: 'success'
+                })
+            }
+            res.status(300).json({
+                error: 'Технические неполадки. Попробуйте позже.'
             })
         } catch (e) {
             e.status = 401;

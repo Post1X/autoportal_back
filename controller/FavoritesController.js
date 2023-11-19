@@ -1,4 +1,5 @@
 import Favorites from "../schemas/FavoritesSchema";
+import Organisations from "../schemas/OrganisationsSchema";
 
 class FavoritesController {
     static AddOrganisationToFav = async (req, res, next) => {
@@ -42,14 +43,56 @@ class FavoritesController {
                 client_id: user_id
             }).populate('organisation_id')
             if (!categoryId) {
-                res.status(200).json(favList)
+                const favListWithCount = [];
+                for (const fav of favList) {
+                    const count = await Favorites.count({ organisation_id: fav.organisation_id });
+                    const org = await Organisations.findById(fav.organisation_id._id).populate('categoryId')
+                    if (org) {
+                        const { _id, logo, name, address, city, rating, categoryId } = org;
+                        const organisationDTO = {
+                            _id: _id.toString(),
+                            logo: logo || '',
+                            name: name || '',
+                            address: address || '',
+                            categoryName: categoryId,
+                            rating: rating || null,
+                            countReviews: count || null
+                        };
+                        favListWithCount.push({
+                            _id: fav._id.toString(),
+                            client_id: fav.client_id.toString(),
+                            organisation_id: organisationDTO
+                        });
+                    }
+                }
+                res.status(200).json(favListWithCount);
             }
             if (categoryId) {
-                console.log('hi');
-                const filteredList = favList.filter(item => item.organisation_id.category_id === categoryId);
-                res.status(200).json({
-                    filteredList
-                })
+                const filteredList = favList.filter(item => item.organisation_id.categoryId.toString() === categoryId.toString());
+                const countReviewsPromises = filteredList.map(async (item) => {
+                    const count = await Favorites.count({ organisation_id: item.organisation_id._id });
+                    const org = await Organisations.findById(item.organisation_id._id).populate('categoryId')
+                    if (org) {
+                        const { _id, logo, name, address, city, rating, categoryId } = org;
+                        const organisationDTO = {
+                            _id: _id.toString(),
+                            logo: logo || '',
+                            name: name || '',
+                            address: address || '',
+                            categoryName: categoryId,
+                            rating: rating || null,
+                            countReviews: count || null
+                        };
+                        return {
+                            client_id: item.client_id,
+                            _id: item._id,
+                            organisation_id: organisationDTO
+                        };
+                    }
+                });
+                const organizationsWithReviews = await Promise.all(countReviewsPromises);
+                const filteredOrganizationsWithReviews = organizationsWithReviews.filter(org => org);
+                res.status(200).json(filteredOrganizationsWithReviews);
             }
         } catch (e) {
             e.status = 401;

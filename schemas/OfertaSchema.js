@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const OfertaSchema = new Schema({
-    to: {
+    offer: {
         type: Schema.Types.String
     },
-    city: {
+    policy: {
         type: Schema.Types.String
     }
 })

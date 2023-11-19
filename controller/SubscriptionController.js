@@ -324,9 +324,11 @@ class SubscriptionController {
                 // subscription_until: null
                 is_active: false
             });
-            await Payments.deleteMany({
+            await Payments.updateOne({
                 seller_id: user_id,
                 organizationId: organizationId
+            }, {
+                is_active: false
             })
             res.status(200).json({
                 message: 'success'
@@ -342,6 +344,7 @@ class SubscriptionController {
     static activateSubscription = async (req, res, next) => {
         try {
             const {organizationId} = req.query;
+            const {user_id} = req;
             const organisation = await Organisations.findOne({
                 _id: organizationId
             });
@@ -354,6 +357,12 @@ class SubscriptionController {
                 })
             await Organisations.updateOne({
                 _id: organizationId
+            }, {
+                is_active: true
+            })
+            await Payments.updateOne({
+                seller_id: user_id,
+                organizationId: organizationId
             }, {
                 is_active: true
             })

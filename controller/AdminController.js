@@ -59,6 +59,7 @@ class AdminController {
                 }])
             }
             const usersArray = await Dealers.find(filter);
+            console.log(usersArray)
             const finalArray = await Promise.all(usersArray.map(async (dealer) => {
                 const organisations = await Organisations.find({dealer_id: dealer._id});
                 const userOrganisations = organisations.filter(org => org.dealer_id.toString() === dealer._id.toString());
@@ -203,6 +204,8 @@ class AdminController {
             const policyPart = policy.path.split('public');
             const finalOffer = `http://194.67.125.33:3001/${offerPart[1].substring(1)}`;
             const finalPolicy = `http://194.67.125.33:3001/${policyPart[1].substring(1)}`;
+            console.log(finalOffer, 'finalOffer');
+            console.log(finalPolicy, 'finalPolicy');
             const newImage = new Oferta({
                 offer: finalOffer,
                 policy: finalPolicy
@@ -222,7 +225,7 @@ class AdminController {
     static getOferta = async (req, res, next) => {
         try {
             const file = await Oferta.findOne();
-            res.status(200).json(file.oferta);
+            res.status(200).json(file.offer);
         } catch (e) {
             e.status = 401;
             next(e);

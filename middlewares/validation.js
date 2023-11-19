@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 //
-const EXCLUDE = ['/register/client', '/login/client/make-call', '/login/client/confirm', '/register/dealer', '/login/dealer','/login/guest', '/login/admin', '/login', '/login/dealer/make-call', '/login/dealer/confirm', '/find']
+const EXCLUDE = ['/register/client', '/login/client/make-call', '/login/client/confirm', '/register/dealer', '/login/dealer','/login/guest', '/login/admin', '/login', '/login/dealer/make-call', '/login/dealer/confirm', '/find', '/offer', '/policy']
 
 const authorization = async (req, res, next) => {
     try {

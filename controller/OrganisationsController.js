@@ -1,7 +1,6 @@
 import Organisations from "../schemas/OrganisationsSchema";
 import moment from "moment-timezone";
 import Reviews from "../schemas/ReviewsSchema";
-import Images from "../schemas/ImageSchema";
 import Favorites from "../schemas/FavoritesSchema";
 import Promotions from "../schemas/PromotionsSchema";
 
@@ -38,7 +37,8 @@ class OrganisationsController {
                 description: description,
                 schedule: schedule,
                 photos: photos,
-                logo: logo
+                logo: logo,
+                rating: 0
             })
             await newOrganisation.save();
             res.status(200).json({
@@ -62,7 +62,10 @@ class OrganisationsController {
             let arr = [];
             await Promise.all(organisations.map(async (item) => {
                 const favcount = await Favorites.count({
-                    _id: item._id
+                    organisation_id: item._id
+                });
+                const countreviews = await Reviews.count({
+                    organisation_id: item._id
                 });
                 const promo = await Promotions.findOne({
                     organizationId: item._id
@@ -78,6 +81,7 @@ class OrganisationsController {
                     isActive: item.is_active,
                     countFavorites: favcount,
                     isBaned: item.is_banned,
+                    countReviews: countreviews,
                     promo: promo ? {
                         description: promo.description,
                         startPromo: promo.startPromo,
@@ -229,10 +233,11 @@ class OrganisationsController {
             const currentTime = moment().tz(timeZone).format('HH:mm')
             const dayOfWeek = moment().format('dddd');
             const todayDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)
-            const {scheduleFilter, city, categoryId, servicesId, brandsCarsId, sortType, id} = req.body;
+            const {scheduleFilter, city, categoryId, servicesId, brandsCarsId, sortType} = req.body;
             const filter = {};
-            let sort;
-            console.log(brandsCarsId);
+            filter.is_active = true;
+            filter.is_banned = false;
+            let sort = 1;
             if (city) {
                 filter.city = city;
             }
@@ -243,15 +248,16 @@ class OrganisationsController {
                 filter.typeServices = {$in: servicesId}
             }
             if (brandsCarsId) {
-                filter.brandsCars = {$in: [brandsCarsId]};
+                const brandsCarsIdArray = Array.isArray(brandsCarsId) ? brandsCarsId : [brandsCarsId];
+                filter.brandsCars = {$in: brandsCarsIdArray};
             }
             if (sortType) {
-                if (sortType === "ratingASC")
+                if (sortType === "ratingASC") {
                     sort = 1;
-                if (sortType === "ratingDESC")
+                } else if (sortType === "ratingDESC") {
                     sort = -1;
+                }
             }
-            console.log(categoryId);
             const days_ids = [];
             const query = await Organisations.find(filter).sort({rating: sort});
             const final_array = [];
@@ -463,12 +469,8 @@ class OrganisationsController {
             const file = req.files.find(file => file.fieldname === 'file');
             const parts = file.path.split('public');
             const finalFile = `http://194.67.125.33:3001/${parts[1].substring(1)}`;
-            const newImage = new Images({
-                url: finalFile
-            });
-            await newImage.save();
             res.status(200).json(
-                newImage.url
+                finalFile
             )
         } catch (e) {
             e.status = 401;

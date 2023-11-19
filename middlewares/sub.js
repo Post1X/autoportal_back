@@ -8,9 +8,9 @@ const sub = async (req, res, next) => {
         const { user_id } = req;
         const payment = await Payments.findOne({
             seller_id: user_id,
-            isNew: true
+            isNew: true,
+            is_active: true
         });
-
         if (payment) {
             const organisation = await Organisations.findOne({
                 _id: payment.organizationId
