@@ -38,7 +38,8 @@ class OrganisationsController {
                 schedule: schedule,
                 photos: photos,
                 logo: logo,
-                rating: 0
+                rating: 0,
+                free_period: true
             })
             await newOrganisation.save();
             res.status(200).json({

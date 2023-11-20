@@ -3,6 +3,7 @@ import PaymentMethods from "../schemas/PaymentMethodsSchema";
 import Subscription from "../schemas/SubscriptionSchema";
 import Organisations from "../schemas/OrganisationsSchema";
 import CheckPayment from "../utilities/CheckPayment";
+import Dealers from "../schemas/DealersSchema";
 
 class SubscriptionController {
     static checkSub = async (req, res, next) => {
@@ -59,9 +60,6 @@ class SubscriptionController {
                 _id: organizationId
             })
             const url = 'https://api.yookassa.ru/v3/payments';
-            const payment_method_id = await PaymentMethods.findOne({
-                user_id: user_id
-            })
             const subDetails = await Subscription.findOne();
             if (organisation.subscription_status === true) {
                 res.status(301).json({
@@ -82,7 +80,7 @@ class SubscriptionController {
                 const idempotenceKey = generateRandomString(7);
                 const requestData = {
                     amount: {
-                        value: subDetails.month_amount,
+                        value: !!organisation.free_period ? 1 : subDetails.month_amount,
                         currency: 'RUB'
                     },
                     description: organizationId,
@@ -170,7 +168,7 @@ class SubscriptionController {
                 const idempotenceKey = generateRandomString(7);
                 const requestData = {
                     amount: {
-                        value: subDetails.year_amount,
+                        value: !!organisation.free_period ? 1 : subDetails.year_amount,
                         currency: 'RUB'
                     },
                     description: organizationId,
@@ -286,10 +284,11 @@ class SubscriptionController {
             })
             const currentDate = new Date();
             const futureDate = new Date(currentDate);
+            const paymentDetails = await Subscription.findOne();
             // if (type === 'month')
-                futureDate.setMonth(currentDate.getMonth() + 1);
+                futureDate.setMonth(currentDate.getMonth() + paymentDetails.free_period);
             if (type === 'year')
-                futureDate.setMonth(currentDate.getMonth() + 12);
+                futureDate.setMonth(currentDate.getMonth() +  paymentDetails.free_period);
             const isoFormat = futureDate.toISOString();
             await Organisations.findOneAndUpdate({
                 _id: organizationId

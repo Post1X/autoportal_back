@@ -120,7 +120,7 @@ class DealersController {
                 const newBuyer = new Dealers({
                     phone_number: phone_number,
                     code: code,
-                    number_activated: false
+                    number_activated: false,
                 })
                 await newBuyer.save();
             }
