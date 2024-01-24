@@ -5,6 +5,10 @@ const Schema = mongoose.Schema;
 const CarsSchema = new Schema({
     title: {
         type: Schema.Types.String
+    },
+    isPopular: {
+        type: Schema.Types.Boolean,
+        default: false
     }
 })
 

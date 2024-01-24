@@ -3,7 +3,6 @@ import PaymentMethods from "../schemas/PaymentMethodsSchema";
 import Subscription from "../schemas/SubscriptionSchema";
 import Organisations from "../schemas/OrganisationsSchema";
 import CheckPayment from "../utilities/CheckPayment";
-import Dealers from "../schemas/DealersSchema";
 
 class SubscriptionController {
     static checkSub = async (req, res, next) => {
@@ -34,7 +33,7 @@ class SubscriptionController {
     static isReleased = async (req, res, next) => {
         try {
             res.status(200).json({
-                isSubscribe: false
+                isSubscribe: true
             })
         } catch (e) {
             e.status = 401;
@@ -76,6 +75,7 @@ class SubscriptionController {
                     }
                     return randomString;
                 }
+
                 const authHeader = 'Basic ' + Buffer.from('244369:test_7NnPZ1y9-SJDn_kaPGbXe1He3EmNJP-RyUvKD_47y7w').toString('base64');
                 const idempotenceKey = generateRandomString(7);
                 const requestData = {
@@ -110,8 +110,8 @@ class SubscriptionController {
                                     isNew: false
                                 })
                                 const newPaymentMethod = new PaymentMethods({
-                                   user_id: user_id,
-                                   payment_method_id: data.id,
+                                    user_id: user_id,
+                                    payment_method_id: data.id,
                                     isNew: true
                                 })
                                 await newPaymentMethod.save();
@@ -164,6 +164,7 @@ class SubscriptionController {
                     }
                     return randomString;
                 }
+
                 const authHeader = 'Basic ' + Buffer.from('244369:test_7NnPZ1y9-SJDn_kaPGbXe1He3EmNJP-RyUvKD_47y7w').toString('base64');
                 const idempotenceKey = generateRandomString(7);
                 const requestData = {
@@ -231,7 +232,7 @@ class SubscriptionController {
             res.status(200).json({
                 subdetails
             })
-        }catch (e) {
+        } catch (e) {
             e.status = 401;
             next(e);
         }
@@ -244,19 +245,18 @@ class SubscriptionController {
                 organizationId: organizationId
             })
             const paymentStatus = await CheckPayment(order_id.order_id);
-            if (paymentStatus === 'succeeded')
-            {
-              await Organisations.findOneAndUpdate({
-                  _id: organizationId
-              }, {
-                  status: 'active'
-              });
-            }else{
+            if (paymentStatus === 'succeeded') {
+                await Organisations.findOneAndUpdate({
+                    _id: organizationId
+                }, {
+                    status: 'active'
+                });
+            } else {
                 res.status(300).json({
                     message: 'Подписка еще не куплена'
                 })
             }
-        }catch (e) {
+        } catch (e) {
             e.status = 401;
             next(e);
         }
@@ -269,49 +269,54 @@ class SubscriptionController {
                 user_id: user_id,
                 isNew: true
             });
-            if (payment)
-            {
-            await Payments.updateMany({
-                seller_id: user_id,
-                isNew: false
-            })
-            const newPayment = new Payments({
-                seller_id: user_id,
-                organizationId: organizationId,
-                payment_method_id: payment.payment_method_id,
-                type: type,
-                isNew: true
-            })
-            const currentDate = new Date();
-            const futureDate = new Date(currentDate);
-            const paymentDetails = await Subscription.findOne();
-            // if (type === 'month')
-                futureDate.setMonth(currentDate.getMonth() + paymentDetails.free_period);
-            if (type === 'year')
-                futureDate.setMonth(currentDate.getMonth() +  paymentDetails.free_period);
-            const isoFormat = futureDate.toISOString();
-            await Organisations.findOneAndUpdate({
-                _id: organizationId
-            }, {
-                subscription_status: true,
-                subscription_until: isoFormat,
-                is_active: true
-            });
-            await newPayment.save()
-            res.status(200).json({
-                message: 'success'
-            })
+            const data = await CheckPayment(payment.payment_method_id);
+            console.log(data.data.paid, 'xuy');
+            if (data.data.paid === false) {
+                res.status(406).json({
+                    message: 'Подписка не прошла. Попробуйте снова.'
+                })
+            } else {
+                if (payment) {
+                    await Payments.updateMany({
+                        seller_id: user_id,
+                        isNew: false
+                    })
+                    const newPayment = new Payments({
+                        seller_id: user_id,
+                        organizationId: organizationId,
+                        payment_method_id: payment.payment_method_id,
+                        type: type,
+                        isNew: true
+                    })
+                    const currentDate = new Date();
+                    const futureDate = new Date(currentDate);
+                    const paymentDetails = await Subscription.findOne();
+                    // if (type === 'month')
+                    futureDate.setMonth(currentDate.getMonth() + paymentDetails.free_period);
+                    if (type === 'year')
+                        futureDate.setMonth(currentDate.getMonth() + paymentDetails.free_period);
+                    const isoFormat = futureDate.toISOString();
+                    await Organisations.findOneAndUpdate({
+                        _id: organizationId
+                    }, {
+                        subscription_status: true,
+                        subscription_until: isoFormat,
+                        is_active: true
+                    });
+                    await newPayment.save()
+                    res.status(200).json({
+                        message: 'success'
+                    })
+                }
             }
-        }catch (e) {
+        } catch (e) {
             e.status = 401;
             next(e);
         }
     }
     //
-    static deactivateSubscription = async (req, res, next) =>
-    {
-        try
-        {
+    static deactivateSubscription = async (req, res, next) => {
+        try {
             const {organizationId} = req.query;
             const {user_id} = req;
             // const organisation = await Organisations.findOne({
@@ -332,9 +337,7 @@ class SubscriptionController {
             res.status(200).json({
                 message: 'success'
             })
-        }
-        catch (e)
-        {
+        } catch (e) {
             e.status = 401;
             next(e);
         }
@@ -368,7 +371,7 @@ class SubscriptionController {
             res.status(200).json({
                 message: 'success'
             })
-        }catch (e) {
+        } catch (e) {
             e.status = 401;
             next(e);
         }

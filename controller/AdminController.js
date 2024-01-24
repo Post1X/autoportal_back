@@ -148,7 +148,7 @@ class AdminController {
             if (sub.length === 0) {
                 const newSub = new Subscription({
                     month_amount: month_amount,
-                    year_amount: year_amount,
+                    year_amount: Math.round(year_amount),
                     free_period: free_period,
                     percentage: -(percentage)
                 });
@@ -157,7 +157,7 @@ class AdminController {
             if (sub) {
                 await Subscription.updateMany({
                     month_amount: month_amount,
-                    year_amount: year_amount,
+                    year_amount: Math.round(year_amount),
                     free_period: free_period,
                     percentage: -(percentage)
                 })
@@ -188,7 +188,10 @@ class AdminController {
         try {
             res.status(200).json({
                 orderBanner: process.env.ORDERBANNER,
-                report: process.env.REPORT
+                report: process.env.REPORT,
+                storeLinkIOS: process.env.ORDERBANNER,
+                storeLinkAndroid: process.env.ORDERBANNER,
+                supportLink: process.env.ORDERBANNER
             })
         } catch (e) {
             e.status = 401;

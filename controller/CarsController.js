@@ -19,7 +19,7 @@ class CarsController {
     //
     static GetCars = async (req, res, next) => {
         try {
-            const cars = await Cars.find();
+            const cars = await Cars.find().sort({isPopular: -1});
             res.status(200).json(cars)
         } catch (e) {
             e.status = 401;

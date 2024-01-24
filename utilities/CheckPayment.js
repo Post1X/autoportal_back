@@ -2,7 +2,6 @@ export default async function CheckPayment(payment) {
     console.log(payment)
     const authHeader = 'Basic ' + Buffer.from('244369:test_7NnPZ1y9-SJDn_kaPGbXe1He3EmNJP-RyUvKD_47y7w').toString('base64');
     const url = `https://api.yookassa.ru/v3/payments/${payment}`;
-
     try {
         const response = await fetch(url, {
             method: 'GET',
@@ -17,7 +16,6 @@ export default async function CheckPayment(payment) {
         const data = await response.json();
         return {
             data,
-            pipistrun: 'chik'
         };
     } catch (error) {
         console.error('Error:', error);

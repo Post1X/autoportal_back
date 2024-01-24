@@ -30,11 +30,11 @@ class PromotionsController {
     static DeletePromotion = async (req, res, next) => {
         try {
             const {promotion_id} = req.query;
-            await Promotions.findByIdAndDelete({
+            const deleted = await Promotions.findOneAndDelete({
                 _id: promotion_id
             })
             res.status(200).json({
-                message: 'success'
+                deleted
             });
         } catch (e) {
             e.status = 401;
@@ -63,12 +63,12 @@ class PromotionsController {
                         endPromo: item.endPromo
                     },
                     organization: {
-                        _id: organisation._id,
-                        logo: organisation.logo,
-                        name: organisation.name,
-                        address: organisation.address,
-                        categoryName: organisation.categoryId,
-                        rating: organisation.rating,
+                        _id: organisation ? organisation._id : null,
+                        logo: organisation ? organisation.logo : null,
+                        name: organisation ? organisation.name : null,
+                        address: organisation ? organisation.address : null,
+                        categoryName: organisation ? organisation.categoryId : null,
+                        rating: organisation ? organisation.rating : null,
                         countReviews: 0
                     }
                 })

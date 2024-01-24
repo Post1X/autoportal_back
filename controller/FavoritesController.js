@@ -20,6 +20,19 @@ class FavoritesController {
         }
     }
     //
+    static getAllFavorites = async (req, res, next) => {
+        try {
+            const {user_id} = req;
+            const favorites = await Favorites.find({
+                client_id: user_id
+            });
+            res.status(200).json(favorites);
+        } catch (e) {
+            e.status = 401;
+            next(e);
+        }
+    }
+    //
     static DeleteFavOrganisation = async (req, res, next) => {
         try {
             const {organisation} = req.query;
@@ -45,10 +58,10 @@ class FavoritesController {
             if (!categoryId) {
                 const favListWithCount = [];
                 for (const fav of favList) {
-                    const count = await Favorites.count({ organisation_id: fav.organisation_id });
+                    const count = await Favorites.count({organisation_id: fav.organisation_id});
                     const org = await Organisations.findById(fav.organisation_id._id).populate('categoryId')
                     if (org) {
-                        const { _id, logo, name, address, city, rating, categoryId } = org;
+                        const {_id, logo, name, address, city, rating, categoryId} = org;
                         const organisationDTO = {
                             _id: _id.toString(),
                             logo: logo || '',
@@ -70,10 +83,10 @@ class FavoritesController {
             if (categoryId) {
                 const filteredList = favList.filter(item => item.organisation_id.categoryId.toString() === categoryId.toString());
                 const countReviewsPromises = filteredList.map(async (item) => {
-                    const count = await Favorites.count({ organisation_id: item.organisation_id._id });
+                    const count = await Favorites.count({organisation_id: item.organisation_id._id});
                     const org = await Organisations.findById(item.organisation_id._id).populate('categoryId')
                     if (org) {
-                        const { _id, logo, name, address, city, rating, categoryId } = org;
+                        const {_id, logo, name, address, city, rating, categoryId} = org;
                         const organisationDTO = {
                             _id: _id.toString(),
                             logo: logo || '',

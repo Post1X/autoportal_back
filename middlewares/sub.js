@@ -15,12 +15,16 @@ const sub = async (req, res, next) => {
             const organisation = await Organisations.findOne({
                 _id: payment.organizationId
             });
-
             if (organisation) {
-                const orgdate = organisation.subscription_until;
+                const orgdate = new Date(organisation.subscription_until);
                 const currentDate = new Date();
 
-                if (currentDate.toISOString() !== orgdate) {
+                const orgDay = orgdate.getDate();
+                const orgMonth = orgdate.getMonth();
+                const currentDay = currentDate.getDate();
+                const currentMonth = currentDate.getMonth();
+
+                if (currentMonth !== orgMonth || currentDay !== orgDay) {
                     console.log('Subscription is active. Moving to the next middleware.');
                     next();
                 } else {

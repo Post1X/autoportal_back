@@ -8,6 +8,15 @@ const CategoriesSchema = new Schema({
     },
     img: {
         type: Schema.Types.String
+    },
+    titleTypeService: {
+        type: Schema.Types.String
+    },
+    noBrands: {
+        type: Schema.Types.Boolean
+    },
+    noService: {
+        type: Schema.Types.Boolean
     }
 })
 

@@ -48,7 +48,9 @@ class BannersController {
                         _id: item._id,
                         organizationId: item.organisation_id,
                         title: item.title,
-                        image: item.img
+                        image: item.img,
+                        from: item.from,
+                        to: item.to
                     })
                 })
                 res.status(200).json(image_array)
@@ -61,7 +63,9 @@ class BannersController {
                         _id: item._id,
                         organizationId: item.organisation_id,
                         title: item.title,
-                        image: item.img
+                        image: item.img,
+                        from: item.from,
+                        to: item.to
                     })
                 })
                 res.status(200).json(image_array)

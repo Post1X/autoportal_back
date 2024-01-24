@@ -20,15 +20,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(router);
 app.set('view engine', 'jade');
 
-process.once('SIGUSR2', async () => {
-    await databaseConnections.closeDatabaseConnection();
-    process.kill(process.pid, 'SIGUSR2');
-});
-
-process.on('SIGINT', async () => {
-    await databaseConnections.closeDatabaseConnection();
-    process.exit();
-});
+// process.once('SIGUSR2', async () => {
+//     await databaseConnections.closeDatabaseConnection();
+//     process.kill(process.pid, 'SIGUSR2');
+// });
+//
+// process.on('SIGINT', async () => {
+//     await databaseConnections.closeDatabaseConnection();
+//     process.exit();
+// });
 
 app.use(function (req, res, next) {
     next(createError(404));
